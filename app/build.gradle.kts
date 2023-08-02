@@ -44,7 +44,6 @@ android {
 
 dependencies {
     implementation(project(mapOf("path" to ":theme")))
-    implementation(project(mapOf("path" to ":extension")))
     implementation(project(mapOf("path" to ":media3")))
 
     implementation("androidx.core:core-ktx:${Dependencies.androidx_core_ktx}")

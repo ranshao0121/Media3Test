@@ -22,9 +22,9 @@ import java.util.Locale;
  * Created by Doikki on 2017/4/10.
  */
 
-public final class PlayerUtils {
+public final class Media3PlayerUtils {
 
-    private PlayerUtils() {
+    private Media3PlayerUtils() {
     }
 
     /**

@@ -10,12 +10,11 @@ import android.view.GestureDetector.OnGestureListener
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
-import androidx.media3.common.util.UnstableApi
-import com.jason.cloud.media3.utils.PlayerUtils
+import com.jason.cloud.media3.utils.Media3PlayerUtils
 import com.jason.cloud.media3.utils.VibratorUtil
 import kotlin.math.abs
 
-class GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs),
+class Media3GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs),
     OnGestureListener, GestureDetector.OnDoubleTapListener, View.OnTouchListener {
 
     private lateinit var playerView: Media3PlayerView
@@ -58,7 +57,7 @@ class GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(context,
         isChangeBrightness = false
         isChangeVolume = false
         streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        brightness = PlayerUtils.scanForActivity(context)?.window?.attributes?.screenBrightness ?:
+        brightness = Media3PlayerUtils.scanForActivity(context)?.window?.attributes?.screenBrightness ?:
         0f
         return true
     }
@@ -73,7 +72,7 @@ class GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(context,
 
     override fun onScroll(e1: MotionEvent, e2: MotionEvent, dx: Float, dy: Float): Boolean {
         if (playerView.isPlaying().not()) return true
-        if (PlayerUtils.isEdge(context, e1)) return true
+        if (Media3PlayerUtils.isEdge(context, e1)) return true
         if (playerView.isLocked) return true
 
         if (isFirstTouch) {
@@ -140,7 +139,7 @@ class GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(context,
     }
 
     private fun slideToChangeBrightness(deltaY: Float) {
-        val activity = PlayerUtils.scanForActivity(context) ?: return
+        val activity = Media3PlayerUtils.scanForActivity(context) ?: return
         val window = activity.window
         val attributes = window.attributes
         val height = measuredHeight

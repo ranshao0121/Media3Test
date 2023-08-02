@@ -22,7 +22,6 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.AspectRatioFrameLayout
@@ -31,10 +30,14 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.exoplayer2.decoder.FfmpegRenderersFactory
 import com.jason.cloud.media3.utils.Media3SourceHelper
 import com.jason.cloud.media3.R
-import com.jason.cloud.media3.utils.VideoScaleModel
-import com.jason.cloud.media3.utils.VideoScaleModel.*
+import com.jason.cloud.media3.interfaces.OnControlViewVisibleListener
+import com.jason.cloud.media3.interfaces.OnMediaItemTransitionListener
+import com.jason.cloud.media3.interfaces.OnStateChangeListener
+import com.jason.cloud.media3.utils.Media3VideoScaleModel
+import com.jason.cloud.media3.utils.Media3VideoScaleModel.*
 import com.jason.cloud.media3.model.Media3VideoItem
-import com.jason.cloud.media3.utils.PlayerUtils
+import com.jason.cloud.media3.utils.Media3PlayState
+import com.jason.cloud.media3.utils.Media3PlayerUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -47,7 +50,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private lateinit var ivHolderBackground: ImageView
     private lateinit var subtitleView: SubtitleView
     private lateinit var ratioContentFrame: AspectRatioFrameLayout
-    private lateinit var gestureView: GestureView
+    private lateinit var gestureView: Media3GestureView
     private lateinit var controlView: Media3PlayerControlView
     private lateinit var errorMessage: TextView
     private lateinit var errorStatusBtn: TextView
@@ -71,16 +74,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     private val mediaSourceHelper by lazy { Media3SourceHelper.getInstance(context) }
     private var speedPlaybackParameters: PlaybackParameters? = null
-    var currentPlayState = STATE_IDLE
+    var currentPlayState = Media3PlayState.STATE_IDLE
 
-    companion object PlayState{
-        const val STATE_IDLE = 1
-        const val STATE_BUFFERING = 2
-        const val STATE_PREPARED = 3
-        const val STATE_ENDED = 4
-        const val STATE_PLAYING = 5
-        const val STATE_PAUSED = 6
-        const val STATE_ERROR = 1
+    companion object PlayState {
+
     }
 
     internal val internalPlayer: ExoPlayer by lazy {
@@ -99,9 +96,9 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private var isInSliding = false
 
     private lateinit var playerListener: Player.Listener
-    private var onPlayStateListener: ((state: Int) -> Unit)? = null
-    private var onControlViewVisibleListener: ((visible: Boolean, fullScreen: Boolean) -> Unit)? =
-        null
+    private var onControlViewVisibleListener: OnControlViewVisibleListener? = null
+    private var onPlayStateListeners = ArrayList<OnStateChangeListener>()
+    private var onMediaItemTransitionListeners = ArrayList<OnMediaItemTransitionListener>()
 
     init {
         LayoutInflater.from(context).inflate(R.layout.media3_player_view, this)
@@ -164,8 +161,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                 surfaceView.keepScreenOn = isPlaying
                 Log.e("PlayerView", "isPlaying = $isPlaying")
                 if (isPlaying) {
-                    currentPlayState = STATE_PLAYING
-                    onPlayStateListener?.invoke(STATE_PLAYING)
+                    currentPlayState = Media3PlayState.STATE_PLAYING
+                    onPlayStateListeners.forEach {
+                        it.onStateChanged(currentPlayState)
+                    }
                 }
             }
 
@@ -186,24 +185,26 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             @SuppressLint("SetTextI18n")
             override fun onPlaybackStateChanged(playbackState: Int) {
                 super.onPlaybackStateChanged(playbackState)
-                onPlayStateListener?.invoke(playbackState)
+                onPlayStateListeners.forEach {
+                    it.onStateChanged(playbackState)
+                }
                 bufferingLayout.isVisible = false
                 Log.e("PlayerView", "playbackState = $playbackState")
                 when (playbackState) {
                     Player.STATE_READY -> {
-                        currentPlayState = STATE_PREPARED
+                        currentPlayState = Media3PlayState.STATE_PREPARED
                         startHideControlViewJob()
                     }
 
                     Player.STATE_ENDED -> {
-                        currentPlayState = STATE_ENDED
+                        currentPlayState = Media3PlayState.STATE_ENDED
                     }
 
                     Player.STATE_IDLE -> {
-                        currentPlayState = STATE_IDLE
+                        currentPlayState = Media3PlayState.STATE_IDLE
                         val error = internalPlayer.playerError
                         if (error != null) {
-                            currentPlayState = STATE_ERROR
+                            currentPlayState = Media3PlayState.STATE_ERROR
                             errorLayout.isVisible = true
                             errorMessage.text = "${error.errorCode} : ${error.errorCodeName}"
                             errorStatusBtn.setOnClickListener {
@@ -213,7 +214,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                     }
 
                     Player.STATE_BUFFERING -> {
-                        currentPlayState = STATE_BUFFERING
+                        currentPlayState = Media3PlayState.STATE_BUFFERING
                         errorLayout.isVisible = false
                         bufferingMessage.text = context.getString(R.string.media3_on_buffing_media)
                         bufferingLayout.isVisible = true
@@ -227,7 +228,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         return controlView.statusView
     }
 
-    fun getScaleModel(): VideoScaleModel {
+    fun getScaleModel(): Media3VideoScaleModel {
         return when (ratioContentFrame.resizeMode) {
             AspectRatioFrameLayout.RESIZE_MODE_FIT -> FIT
             AspectRatioFrameLayout.RESIZE_MODE_FILL -> FILL
@@ -238,7 +239,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         }
     }
 
-    fun setScaleModel(scaleModel: VideoScaleModel) {
+    fun setScaleModel(scaleModel: Media3VideoScaleModel) {
         when (scaleModel) {
             FIT -> ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
             FILL -> ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
@@ -281,8 +282,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     fun pause() {
         internalPlayer.playWhenReady = false
-        currentPlayState = STATE_PAUSED
-        onPlayStateListener?.invoke(STATE_PAUSED)
+        currentPlayState = Media3PlayState.STATE_PAUSED
+        onPlayStateListeners.forEach {
+            it.onStateChanged(currentPlayState)
+        }
     }
 
     fun stop() {
@@ -363,13 +366,53 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         internalPlayer.release()
     }
 
-    fun setOnPlayStateListener(listener: (state: Int) -> Unit) {
-        this.onPlayStateListener = listener
+    fun getCurrentMediaItemIndex(): Int {
+        return internalPlayer.currentMediaItemIndex
+    }
+
+    fun hasNextMediaItem(): Boolean {
+        return internalPlayer.hasNextMediaItem()
+    }
+
+    fun hasPreviousMediaItem(): Boolean {
+        return internalPlayer.hasPreviousMediaItem()
+    }
+
+    fun seekToNext() {
+        internalPlayer.seekToNext()
+    }
+
+    fun seekToPrevious() {
+        internalPlayer.seekToPrevious()
+    }
+
+    fun addOnStateChangeListener(listener: OnStateChangeListener) {
+        this.onPlayStateListeners.add(listener)
+    }
+
+    fun removeOnStateChangeListener(listener: OnStateChangeListener) {
+        this.onPlayStateListeners.remove(listener)
+    }
+
+    fun clearOnStateChangeListener() {
+        this.onPlayStateListeners.clear()
+    }
+
+    fun removeOnMediaItemTransitionListener(listener: OnMediaItemTransitionListener) {
+        this.onMediaItemTransitionListeners.remove(listener)
+    }
+
+    fun addOnMediaItemTransitionListener(listener: OnMediaItemTransitionListener) {
+        this.onMediaItemTransitionListeners.add(listener)
+    }
+
+    fun clearOnMediaItemTransitionListener() {
+        this.onMediaItemTransitionListeners.clear()
     }
 
     /**********************ControlView*********************************/
 
-    fun onControlViewVisibleListener(listener: (visible: Boolean, fullScreen: Boolean) -> Unit) {
+    fun onControlViewVisibleListener(listener: OnControlViewVisibleListener) {
         this.onControlViewVisibleListener = listener
     }
 
@@ -378,14 +421,14 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             showBars()
         }
         controlView.show()
-        onControlViewVisibleListener?.invoke(true, isInFullscreen)
+        onControlViewVisibleListener?.onVisibleChanged(true, isInFullscreen)
         startHideControlViewJob()
     }
 
     fun hideControlView() {
         hideBars()
         controlView.hide()
-        onControlViewVisibleListener?.invoke(false, isInFullscreen)
+        onControlViewVisibleListener?.onVisibleChanged(false, isInFullscreen)
     }
 
     fun isControlViewVisible(): Boolean {
@@ -421,8 +464,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         indicatorSlidePosition.progress = percent
         tvSlidePosition.text = context.getString(
             R.string.media3_slide_position,
-            PlayerUtils.stringForTime(position),
-            PlayerUtils.stringForTime(duration)
+            Media3PlayerUtils.stringForTime(position),
+            Media3PlayerUtils.stringForTime(duration)
         )
     }
 
@@ -446,7 +489,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                         if (controlView.isVisible) {
                             hideBars()
                             controlView.hide()
-                            onControlViewVisibleListener?.invoke(false, isInFullscreen)
+                            onControlViewVisibleListener?.onVisibleChanged(
+                                false,
+                                isInFullscreen
+                            )
                         }
                         break
                     } else {
@@ -455,7 +501,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                                 showBars()
                             }
                             controlView.show()
-                            onControlViewVisibleListener?.invoke(true, isInFullscreen)
+                            onControlViewVisibleListener?.onVisibleChanged(
+                                true,
+                                isInFullscreen
+                            )
                         }
                         break
                     }
@@ -466,7 +515,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     fun startFullScreen() {
         hideBars()
-        PlayerUtils.scanForActivity(context)?.let { activity ->
+        Media3PlayerUtils.scanForActivity(context)?.let { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             rootView.removeView(rootContainer)
             val decorView = activity.window.decorView as ViewGroup
@@ -480,7 +529,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         if (controlView.isVisible) {
             showBars()
         }
-        PlayerUtils.scanForActivity(context)?.let { activity ->
+        Media3PlayerUtils.scanForActivity(context)?.let { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             val decorView = activity.window.decorView as ViewGroup
             decorView.removeView(rootContainer)
@@ -490,7 +539,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     private fun hideBars() {
-        PlayerUtils.scanForActivity(context)?.let { activity ->
+        Media3PlayerUtils.scanForActivity(context)?.let { activity ->
             WindowInsetsControllerCompat(activity.window, activity.window.decorView).also {
                 it.systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -501,7 +550,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     @SuppressLint("SourceLockedOrientationActivity")
     private fun showBars() {
-        PlayerUtils.scanForActivity(context)?.let { activity ->
+        Media3PlayerUtils.scanForActivity(context)?.let { activity ->
             WindowInsetsControllerCompat(activity.window, activity.window.decorView).also {
                 it.systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE

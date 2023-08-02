@@ -25,12 +25,12 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.DefaultTrackNameProvider
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.dialog.TrackSelectDialog
-import com.jason.cloud.media3.utils.VideoScaleModel
+import com.jason.cloud.media3.utils.Media3VideoScaleModel
 import com.jason.cloud.media3.model.AudioTrack
 import com.jason.cloud.media3.model.Media3VideoItem
 import com.jason.cloud.media3.model.SubtitleTrack
 import com.jason.cloud.media3.model.TrackSelectEntity
-import com.jason.cloud.media3.utils.PlayerUtils
+import com.jason.cloud.media3.utils.Media3PlayerUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -163,7 +163,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 playerView?.isInFullscreen = false
                 titleBar.visibility = View.INVISIBLE
                 bottomTitle.visibility = View.VISIBLE
-                statusView.layoutParams.height = PlayerUtils.getStatusBarHeight(context).toInt()
+                statusView.layoutParams.height = Media3PlayerUtils.getStatusBarHeight(context).toInt()
                 tvVideoSize.isVisible = false
                 setPadding(0, 0, 0, 0)
             }
@@ -179,7 +179,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                     tvVideoSize.text = "${size.width} × ${size.height}"
                     tvVideoSize.isVisible = true
                 }
-                setPadding(PlayerUtils.getStatusBarHeight(context).toInt(), 0, 0, 0)
+                setPadding(Media3PlayerUtils.getStatusBarHeight(context).toInt(), 0, 0, 0)
             }
         }
     }
@@ -552,11 +552,11 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
     private fun showRatioSelector() {
         playerView?.let { view ->
             val list = ArrayList<TrackSelectEntity>().apply {
-                add(TrackSelectEntity(VideoScaleModel.FIT, "自适应"))
-                add(TrackSelectEntity(VideoScaleModel.ZOOM, "居中裁剪"))
-                add(TrackSelectEntity(VideoScaleModel.FILL, "填充屏幕"))
-                add(TrackSelectEntity(VideoScaleModel.FIXED_WIDTH, "宽度自适应"))
-                add(TrackSelectEntity(VideoScaleModel.FIXED_HEIGHT, "高度自适应"))
+                add(TrackSelectEntity(Media3VideoScaleModel.FIT, "自适应"))
+                add(TrackSelectEntity(Media3VideoScaleModel.ZOOM, "居中裁剪"))
+                add(TrackSelectEntity(Media3VideoScaleModel.FILL, "填充屏幕"))
+                add(TrackSelectEntity(Media3VideoScaleModel.FIXED_WIDTH, "宽度自适应"))
+                add(TrackSelectEntity(Media3VideoScaleModel.FIXED_HEIGHT, "高度自适应"))
             }
             val selectedPosition = list.indexOfFirst {
                 it.tag == view.getScaleModel()
@@ -570,7 +570,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 setSelectionData(list)
                 onNegative("取消")
                 onPositive("确定") {
-                    view.setScaleModel(it.tag as VideoScaleModel)
+                    view.setScaleModel(it.tag as Media3VideoScaleModel)
                 }
                 show()
             }

@@ -6,8 +6,10 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.jason.cloud.media3.R
+import com.jason.cloud.media3.interfaces.OnStateChangeListener
 import com.jason.cloud.media3.model.Media3VideoItem
-import com.jason.cloud.media3.utils.PlayerUtils
+import com.jason.cloud.media3.utils.Media3PlayState
+import com.jason.cloud.media3.utils.Media3PlayerUtils
 import com.jason.cloud.media3.widget.Media3PlayerView
 import java.io.Serializable
 
@@ -42,13 +44,15 @@ class VideoPlayActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video_play)
         playerView.getStatusView().layoutParams.height =
-            PlayerUtils.getStatusBarHeight(this).toInt()
-        playerView.setOnPlayStateListener {
-            when (it) {
-                Media3PlayerView.STATE_PLAYING -> isPausedByUser = true
-                Media3PlayerView.STATE_PAUSED -> isPausedByUser = true
+            Media3PlayerUtils.getStatusBarHeight(this).toInt()
+        playerView.addOnStateChangeListener(object : OnStateChangeListener {
+            override fun onStateChanged(state: Int) {
+                when (state) {
+                    Media3PlayState.STATE_PLAYING -> isPausedByUser = true
+                    Media3PlayState.STATE_PAUSED -> isPausedByUser = true
+                }
             }
-        }
+        })
 
         val url = intent.getStringExtra("url")
         val title = intent.getStringExtra("title")

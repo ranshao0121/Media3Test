@@ -36,7 +36,7 @@
                 android:background="?selectableItemBackgroundBorderless"
                 android:scaleType="centerInside"
                 android:visibility="visible"
-                app:srcCompat="@drawable/ic_round_keyboard_backspace_24"
+                app:srcCompat="@drawable/ic_media3_round_keyboard_backspace_24"
                 app:tint="@color/color_media3_player_button_tint"
                 tools:ignore="SpeakableTextPresentCheck,SpeakableTextPresentCheck" />
 
@@ -130,7 +130,7 @@
         android:layout_gravity="center"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/shape_button_shadow_background"
+        android:background="@drawable/shape_media3_button_shadow_background"
         android:contentDescription="@string/media3_lock_and_unlock"
         android:scaleType="centerInside"
         android:visibility="visible"
@@ -355,7 +355,7 @@
         android:layout_gravity="center"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/shape_button_shadow_background_100"
+        android:background="@drawable/shape_media3_button_shadow_background_100"
         android:contentDescription="@string/media3_lock_and_unlock"
         android:padding="20dp"
         android:scaleType="fitXY"

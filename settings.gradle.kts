@@ -29,5 +29,4 @@ dependencyResolutionManagement {
 rootProject.name = "Media3Test"
 include(":app")
 include(":theme")
-include(":extension")
 include(":media3")
