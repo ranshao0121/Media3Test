@@ -75,7 +75,6 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private lateinit var surfaceView: View
 
     private val mediaSourceHelper by lazy { Media3SourceHelper.getInstance(context) }
-    private var speedPlaybackParameters: PlaybackParameters? = null
 
     private var currentPlayState = Media3PlayState.STATE_IDLE
     internal val internalPlayer: ExoPlayer by lazy {
@@ -118,6 +117,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             subtitleView.setUserDefaultTextSize()
             subtitleView.setStyle(getUserCaptionStyle())
 
+            ratioContentFrame.alpha = 0f //避免首屏闪烁
             ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
             ratioContentFrame.addView(
                 surfaceView, 0, LayoutParams(
@@ -204,6 +204,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             override fun onVideoSizeChanged(videoSize: VideoSize) {
                 super.onVideoSizeChanged(videoSize)
                 if (videoSize.width > 0 && videoSize.height > 0) {
+                    ratioContentFrame.animate().alpha(1f).duration = 200
                     ratioContentFrame.setAspectRatio(
                         videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height
                     )
@@ -378,13 +379,11 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     fun setSpeed(speed: Float) {
-        internalPlayer.playbackParameters = PlaybackParameters(speed).also {
-            speedPlaybackParameters = it
-        }
+        internalPlayer.playbackParameters = PlaybackParameters(speed)
     }
 
     fun getSpeed(): Float {
-        return speedPlaybackParameters?.speed ?: 1f
+        return internalPlayer.playbackParameters.speed
     }
 
     fun release() {
