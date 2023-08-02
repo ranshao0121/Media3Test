@@ -87,6 +87,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        if (isInEditMode) return
         if (isBatteryReceiverRegister) {
             context.unregisterReceiver(batteryReceiver)
             isBatteryReceiverRegister = false
@@ -95,6 +96,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        if (isInEditMode) return
         if (!isBatteryReceiverRegister) {
             context.registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             isBatteryReceiverRegister = true
@@ -390,6 +392,8 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 ibNext.isEnabled = true
                 ibNext.setOnClickListener {
                     player.seekToNextMediaItem()
+                    player.prepare()
+                    player.playWhenReady = true
                 }
             }
 
@@ -638,6 +642,8 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 onNegative("取消")
                 onPositive("确定") {
                     player.seekTo(it.tag as Int, 0)
+                    player.prepare()
+                    player.playWhenReady = true
                 }
                 show()
             }

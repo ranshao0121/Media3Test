@@ -10,8 +10,6 @@ import android.view.LayoutInflater
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
-import android.view.accessibility.CaptioningManager
-import android.view.accessibility.CaptioningManager.CaptionStyle
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -25,13 +23,12 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
-import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.SubtitleView
-import com.google.android.exoplayer2.decoder.FfmpegRenderersFactory
+import com.jason.cloud.media3.utils.FfmpegRenderersFactory
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.interfaces.OnControlViewVisibleListener
@@ -114,7 +111,6 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     init {
-
         LayoutInflater.from(context).inflate(R.layout.media3_player_view, this)
         if (isInEditMode.not()) {
             bindViews()
@@ -182,6 +178,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                 //相当于暂停继续
                 surfaceView.keepScreenOn = isPlaying
                 if (isPlaying) {
+                    startHideControlViewJob()
                     currentPlayState = Media3PlayState.STATE_PLAYING
                     onPlayStateListeners.forEach {
                         it.onStateChanged(currentPlayState)

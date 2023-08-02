@@ -9,6 +9,7 @@
             android:name=".activity.VideoPlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout"
             android:exported="true"
+            android:hardwareAccelerated="true"
             android:theme="@style/VideoPlayerTheme" />
     </application>
 

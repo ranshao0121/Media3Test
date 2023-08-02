@@ -7,7 +7,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.google.android.exoplayer2.decoder.FfmpegRenderersFactory
+import com.jason.cloud.media3.utils.FfmpegRenderersFactory
 import com.jason.cloud.media3.interfaces.OnMediaItemTransitionListener
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
 import com.jason.cloud.media3.model.Media3VideoItem
