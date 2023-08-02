@@ -261,9 +261,9 @@
 
             <ImageButton
                 android:id="@+id/media3_ib_play"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/media3_play_or_pause"
                 android:tooltipText="@string/media3_play_or_pause"
                 app:srcCompat="@drawable/selector_media3_play_button"
@@ -272,9 +272,9 @@
 
             <ImageButton
                 android:id="@+id/media3_ib_next"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="40dp"
                 android:layout_height="48dp"
-                android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/media3_next_episode"
                 android:tooltipText="@string/media3_next_episode"
                 app:srcCompat="@drawable/ic_media3_contra_button_skip_next_24"
@@ -295,13 +295,14 @@
             <Space
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:minWidth="48dp" />
 
             <ImageButton
                 android:id="@+id/media3_ib_list"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="40dp"
                 android:layout_height="48dp"
-                android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/media3_select_episode"
                 android:scaleType="centerInside"
                 android:tooltipText="@string/media3_select_episode"
@@ -311,9 +312,9 @@
 
             <ImageButton
                 android:id="@+id/media3_ib_subtitle"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="40dp"
                 android:layout_height="48dp"
-                android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/media3_select_subtitles"
                 android:scaleType="centerInside"
                 android:tooltipText="@string/media3_select_subtitles"
@@ -323,9 +324,9 @@
 
             <ImageButton
                 android:id="@+id/media3_ib_audio_track"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="40dp"
                 android:layout_height="48dp"
-                android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/media3_select_audio_track"
                 android:scaleType="centerInside"
                 android:tooltipText="@string/media3_select_audio_track"
@@ -335,9 +336,9 @@
 
             <ImageButton
                 android:id="@+id/media3_ib_play_speed"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="40dp"
                 android:layout_height="48dp"
-                android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/media3_select_play_speed"
                 android:scaleType="centerInside"
                 android:tooltipText="@string/media3_select_play_speed"
@@ -347,9 +348,9 @@
 
             <ImageButton
                 android:id="@+id/media3_ib_ratio"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="40dp"
                 android:layout_height="48dp"
-                android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/media3_select_scale_mode"
                 android:rotation="-45"
                 android:scaleType="centerInside"
@@ -360,9 +361,9 @@
 
             <ImageButton
                 android:id="@+id/media3_ib_rotation"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/media3_screen_rotation"
                 android:scaleType="centerInside"
                 android:tooltipText="@string/media3_screen_rotation"
