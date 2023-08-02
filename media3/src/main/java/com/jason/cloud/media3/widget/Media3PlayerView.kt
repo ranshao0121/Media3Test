@@ -2,13 +2,16 @@ package com.jason.cloud.media3.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.ActivityInfo
+import android.graphics.Color
+import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.TextureView
+import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
+import android.view.accessibility.CaptioningManager
+import android.view.accessibility.CaptioningManager.CaptionStyle
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -22,9 +25,11 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
+import androidx.media3.common.util.Util
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.SubtitleView
 import com.google.android.exoplayer2.decoder.FfmpegRenderersFactory
 import com.google.android.material.progressindicator.CircularProgressIndicator
@@ -74,8 +79,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     private val mediaSourceHelper by lazy { Media3SourceHelper.getInstance(context) }
     private var speedPlaybackParameters: PlaybackParameters? = null
-    var currentPlayState = Media3PlayState.STATE_IDLE
 
+    private var currentPlayState = Media3PlayState.STATE_IDLE
     internal val internalPlayer: ExoPlayer by lazy {
         ExoPlayer.Builder(context)
             .setAudioAttributes(AudioAttributes.DEFAULT, true)
@@ -94,14 +99,28 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private var onControlViewVisibleListener: OnControlViewVisibleListener? = null
     private var onPlayStateListeners = ArrayList<OnStateChangeListener>()
     private var onMediaItemTransitionListeners = ArrayList<OnMediaItemTransitionListener>()
+    private var onBackPressedListener: (() -> Unit)? = null
+    private var onRequestScreenOrientationListener: ((isFullScreen: Boolean) -> Unit)? = null
+
+    private fun getUserCaptionStyle(): CaptionStyleCompat {
+        return CaptionStyleCompat(
+            Color.WHITE,
+            Color.TRANSPARENT,
+            Color.TRANSPARENT,
+            CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW,
+            Color.DKGRAY,
+            Typeface.DEFAULT
+        )
+    }
 
     init {
+
         LayoutInflater.from(context).inflate(R.layout.media3_player_view, this)
         if (isInEditMode.not()) {
             bindViews()
             initPlayListener()
-            subtitleView.setUserDefaultStyle()
             subtitleView.setUserDefaultTextSize()
+            subtitleView.setStyle(getUserCaptionStyle())
 
             ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
             ratioContentFrame.addView(
@@ -112,11 +131,19 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             )
 
             internalPlayer.addAnalyticsListener(EventLogger("ExoPlayer"))
-            internalPlayer.setVideoTextureView(surfaceView as TextureView)
+            internalPlayer.setVideoSurfaceView(surfaceView as SurfaceView)
             internalPlayer.setWakeMode(C.WAKE_MODE_LOCAL)
             internalPlayer.addListener(playerListener)
             controlView.attachPlayerView(this)
             gestureView.attachPlayerView(this)
+
+            controlView.onBackPressed {
+                if (isInFullscreen) {
+                    cancelFullScreen()
+                } else {
+                    onBackPressedListener?.invoke()
+                }
+            }
         }
     }
 
@@ -145,7 +172,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         rootContainer = findViewById(R.id.root_container)
         rootView = findViewById(R.id.root_view)
 
-        surfaceView = TextureView(context)
+        surfaceView = SurfaceView(context)
     }
 
     private fun initPlayListener() {
@@ -318,6 +345,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         }
     }
 
+    fun currentPlayState(): Int {
+        return currentPlayState
+    }
+
     fun seekTo(time: Long) {
         internalPlayer.seekTo(time)
     }
@@ -477,6 +508,14 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         )
     }
 
+    fun onBackPressed(listener: () -> Unit) {
+        this.onBackPressedListener = listener
+    }
+
+    fun onRequestScreenOrientationListener(listener: (fullScreen: Boolean) -> Unit) {
+        this.onRequestScreenOrientationListener = listener
+    }
+
     private fun startHideControlViewJob() {
         hideControlViewJob?.cancel()
         hideControlViewJob = scope.launch {
@@ -516,7 +555,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     fun startFullScreen() {
         hideBars()
         Media3PlayerUtils.scanForActivity(context)?.let { activity ->
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            onRequestScreenOrientationListener?.invoke(true)
             rootView.removeView(rootContainer)
             val decorView = activity.window.decorView as ViewGroup
             decorView.addView(rootContainer)
@@ -530,7 +569,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             showBars()
         }
         Media3PlayerUtils.scanForActivity(context)?.let { activity ->
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            onRequestScreenOrientationListener?.invoke(false)
             val decorView = activity.window.decorView as ViewGroup
             decorView.removeView(rootContainer)
             rootView.addView(rootContainer)

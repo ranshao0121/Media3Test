@@ -9,7 +9,6 @@
             android:name=".activity.VideoPlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:theme="@style/VideoPlayerTheme" />
     </application>
 

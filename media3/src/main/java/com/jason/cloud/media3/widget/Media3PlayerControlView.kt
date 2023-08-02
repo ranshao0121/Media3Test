@@ -83,6 +83,8 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
     private var videoPositionJob: Job? = null
 
     private var isBatteryReceiverRegister = false
+    private var onBackPressedListener: (() -> Unit)? = null
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         if (isBatteryReceiverRegister) {
@@ -118,6 +120,9 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 false
             }
             batteryReceiver = BatteryReceiver(ivBattery, tvBattery)
+            ibBackspace.setOnClickListener {
+                onBackPressedListener?.invoke()
+            }
             ibList.setOnClickListener {
                 showEpisodeSelector()
             }
@@ -184,7 +189,8 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 statusView.layoutParams.height =
                     Media3PlayerUtils.getStatusBarHeight(context).toInt()
                 tvVideoSize.isVisible = false
-                setPadding(0, 0, 0, 0)
+                titleBar.setPadding(0, 0, 0, 0)
+                bottomBar.setPadding(0, 0, 0, 0)
             }
         } else {
             ibRotation.isEnabled = false
@@ -198,7 +204,12 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                     tvVideoSize.text = "${size.width} × ${size.height}"
                     tvVideoSize.isVisible = true
                 }
-                setPadding(Media3PlayerUtils.getStatusBarHeight(context).toInt(), 0, 0, 0)
+                titleBar.setPadding(
+                    Media3PlayerUtils.getStatusBarHeight(context).toInt(), 0, 0, 0
+                )
+                bottomBar.setPadding(
+                    Media3PlayerUtils.getStatusBarHeight(context).toInt(), 0, 0, 0
+                )
             }
         }
     }
@@ -282,6 +293,10 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 isVisible = false
             }
         }
+    }
+
+    fun onBackPressed(listener: () -> Unit) {
+        this.onBackPressedListener = listener
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {

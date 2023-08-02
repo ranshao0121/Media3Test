@@ -2,10 +2,12 @@ package com.jason.cloud.media3.activity
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
 import com.jason.cloud.media3.model.Media3VideoItem
@@ -43,8 +45,21 @@ class VideoPlayActivity : AppCompatActivity() {
         }
     }
 
+    private fun adaptCutoutAboveAndroidP() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val lp = window.attributes
+            lp.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            window.attributes = lp
+        }
+    }
+
+    private var rememberOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        rememberOrientation = requestedOrientation
+        adaptCutoutAboveAndroidP()
         setContentView(R.layout.activity_video_play)
         playerView.getStatusView().layoutParams.height =
             Media3PlayerUtils.getStatusBarHeight(this).toInt()
@@ -57,6 +72,18 @@ class VideoPlayActivity : AppCompatActivity() {
                 }
             }
         })
+
+        playerView.onRequestScreenOrientationListener {
+            if (it) {
+                if (requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                }
+            } else {
+                if (requestedOrientation != rememberOrientation) {
+                    requestedOrientation = rememberOrientation
+                }
+            }
+        }
 
         val url = intent.getStringExtra("url")
         val title = intent.getStringExtra("title")
