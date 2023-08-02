@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,12 +26,12 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.DefaultTrackNameProvider
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.dialog.TrackSelectDialog
-import com.jason.cloud.media3.utils.Media3VideoScaleModel
 import com.jason.cloud.media3.model.AudioTrack
 import com.jason.cloud.media3.model.Media3VideoItem
 import com.jason.cloud.media3.model.SubtitleTrack
 import com.jason.cloud.media3.model.TrackSelectEntity
 import com.jason.cloud.media3.utils.Media3PlayerUtils
+import com.jason.cloud.media3.utils.Media3VideoScaleModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -80,6 +81,23 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
 
     private val scope = CoroutineScope(Dispatchers.Main)
     private var videoPositionJob: Job? = null
+
+    private var isBatteryReceiverRegister = false
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        if (isBatteryReceiverRegister) {
+            context.unregisterReceiver(batteryReceiver)
+            isBatteryReceiverRegister = false
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        if (!isBatteryReceiverRegister) {
+            context.registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            isBatteryReceiverRegister = true
+        }
+    }
 
     private class BatteryReceiver(val imageView: ImageView, val textView: TextView) :
         BroadcastReceiver() {
@@ -163,7 +181,8 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 playerView?.isInFullscreen = false
                 titleBar.visibility = View.INVISIBLE
                 bottomTitle.visibility = View.VISIBLE
-                statusView.layoutParams.height = Media3PlayerUtils.getStatusBarHeight(context).toInt()
+                statusView.layoutParams.height =
+                    Media3PlayerUtils.getStatusBarHeight(context).toInt()
                 tvVideoSize.isVisible = false
                 setPadding(0, 0, 0, 0)
             }

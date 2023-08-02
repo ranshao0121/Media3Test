@@ -26,18 +26,18 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.SubtitleView
-import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.exoplayer2.decoder.FfmpegRenderersFactory
-import com.jason.cloud.media3.utils.Media3SourceHelper
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.interfaces.OnControlViewVisibleListener
 import com.jason.cloud.media3.interfaces.OnMediaItemTransitionListener
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
-import com.jason.cloud.media3.utils.Media3VideoScaleModel
-import com.jason.cloud.media3.utils.Media3VideoScaleModel.*
 import com.jason.cloud.media3.model.Media3VideoItem
 import com.jason.cloud.media3.utils.Media3PlayState
 import com.jason.cloud.media3.utils.Media3PlayerUtils
+import com.jason.cloud.media3.utils.Media3SourceHelper
+import com.jason.cloud.media3.utils.Media3VideoScaleModel
+import com.jason.cloud.media3.utils.Media3VideoScaleModel.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -76,17 +76,12 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private var speedPlaybackParameters: PlaybackParameters? = null
     var currentPlayState = Media3PlayState.STATE_IDLE
 
-    companion object PlayState {
-
-    }
-
     internal val internalPlayer: ExoPlayer by lazy {
         ExoPlayer.Builder(context)
             .setAudioAttributes(AudioAttributes.DEFAULT, true)
             .setRenderersFactory(FfmpegRenderersFactory(context))
             .build()
     }
-
 
     private val scope = CoroutineScope(Dispatchers.Main)
     private var hideControlViewJob: Job? = null
@@ -159,9 +154,18 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                 super.onIsPlayingChanged(isPlaying)
                 //相当于暂停继续
                 surfaceView.keepScreenOn = isPlaying
-                Log.e("PlayerView", "isPlaying = $isPlaying")
                 if (isPlaying) {
                     currentPlayState = Media3PlayState.STATE_PLAYING
+                    onPlayStateListeners.forEach {
+                        it.onStateChanged(currentPlayState)
+                    }
+                }
+            }
+
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                super.onPlayWhenReadyChanged(playWhenReady, reason)
+                if (playWhenReady.not()) {
+                    currentPlayState = Media3PlayState.STATE_PAUSED
                     onPlayStateListeners.forEach {
                         it.onStateChanged(currentPlayState)
                     }
@@ -282,10 +286,6 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     fun pause() {
         internalPlayer.playWhenReady = false
-        currentPlayState = Media3PlayState.STATE_PAUSED
-        onPlayStateListeners.forEach {
-            it.onStateChanged(currentPlayState)
-        }
     }
 
     fun stop() {

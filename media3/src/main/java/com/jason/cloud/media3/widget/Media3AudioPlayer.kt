@@ -41,6 +41,16 @@ class Media3AudioPlayer(context: Context) {
             }
         }
 
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            super.onPlayWhenReadyChanged(playWhenReady, reason)
+            if (playWhenReady.not()) {
+                currentPlayState = Media3PlayState.STATE_PAUSED
+                onPlayStateListeners.forEach {
+                    it.onStateChanged(currentPlayState)
+                }
+            }
+        }
+
         @SuppressLint("SetTextI18n")
         override fun onPlaybackStateChanged(playbackState: Int) {
             super.onPlaybackStateChanged(playbackState)
