@@ -30,10 +30,10 @@
 
             <ImageButton
                 android:id="@+id/media3_ib_backspace"
+                style="?toolbarNavigationButtonStyle"
                 android:layout_width="48dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:background="?selectableItemBackgroundBorderless"
                 android:scaleType="centerInside"
                 android:visibility="visible"
                 app:srcCompat="@drawable/ic_media3_round_keyboard_backspace_24"
@@ -133,10 +133,12 @@
         android:background="@drawable/shape_media3_button_shadow_background"
         android:contentDescription="@string/media3_lock_and_unlock"
         android:scaleType="centerInside"
+        android:tooltipText="@string/media3_lock_and_unlock"
         android:visibility="visible"
         app:srcCompat="@drawable/selector_media3_player_lock_button"
         app:tint="@color/color_media3_player_button_press_tint"
-        tools:ignore="SpeakableTextPresentCheck,SpeakableTextPresentCheck" />
+        tools:ignore="SpeakableTextPresentCheck,SpeakableTextPresentCheck"
+        tools:targetApi="o" />
 
     <LinearLayout
         android:id="@+id/media3_bottom_bar"
@@ -352,7 +354,6 @@
                 android:layout_width="40dp"
                 android:layout_height="48dp"
                 android:contentDescription="@string/media3_select_scale_mode"
-                android:rotation="-45"
                 android:scaleType="centerInside"
                 android:tooltipText="@string/media3_select_scale_mode"
                 app:srcCompat="@drawable/ic_media3_contra_button_ratio_24"

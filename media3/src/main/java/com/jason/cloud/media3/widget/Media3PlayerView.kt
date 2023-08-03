@@ -28,13 +28,13 @@ import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.SubtitleView
-import com.jason.cloud.media3.utils.FfmpegRenderersFactory
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.interfaces.OnControlViewVisibleListener
 import com.jason.cloud.media3.interfaces.OnMediaItemTransitionListener
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
 import com.jason.cloud.media3.model.Media3VideoItem
+import com.jason.cloud.media3.utils.FfmpegRenderersFactory
 import com.jason.cloud.media3.utils.Media3PlayState
 import com.jason.cloud.media3.utils.Media3PlayerUtils
 import com.jason.cloud.media3.utils.Media3SourceHelper
@@ -98,24 +98,22 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private var onBackPressedListener: (() -> Unit)? = null
     private var onRequestScreenOrientationListener: ((isFullScreen: Boolean) -> Unit)? = null
 
-    private fun getUserCaptionStyle(): CaptionStyleCompat {
-        return CaptionStyleCompat(
-            Color.WHITE,
-            Color.TRANSPARENT,
-            Color.TRANSPARENT,
-            CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW,
-            Color.DKGRAY,
-            Typeface.DEFAULT
-        )
-    }
-
     init {
         LayoutInflater.from(context).inflate(R.layout.media3_player_view, this)
         if (isInEditMode.not()) {
             bindViews()
             initPlayListener()
             subtitleView.setUserDefaultTextSize()
-            subtitleView.setStyle(getUserCaptionStyle())
+            subtitleView.setStyle(
+                CaptionStyleCompat(
+                    Color.WHITE,
+                    Color.TRANSPARENT,
+                    Color.TRANSPARENT,
+                    CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW,
+                    Color.BLACK,
+                    Typeface.DEFAULT
+                )
+            )
 
             ratioContentFrame.alpha = 0f //避免首屏闪烁
             ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
