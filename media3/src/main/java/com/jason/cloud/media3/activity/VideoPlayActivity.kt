@@ -4,15 +4,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
+import androidx.appcompat.app.AppCompatActivity
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
 import com.jason.cloud.media3.model.Media3VideoItem
 import com.jason.cloud.media3.utils.Media3PlayState
-import com.jason.cloud.media3.utils.Media3PlayerUtils
+import com.jason.cloud.media3.utils.PlayerUtils
 import com.jason.cloud.media3.widget.Media3PlayerView
 import java.io.Serializable
 
@@ -61,11 +61,12 @@ class VideoPlayActivity : AppCompatActivity() {
         rememberOrientation = requestedOrientation
         adaptCutoutAboveAndroidP()
         setContentView(R.layout.activity_video_play)
+
         playerView.getStatusView().layoutParams.height =
-            Media3PlayerUtils.getStatusBarHeight(this).toInt()
+            PlayerUtils.getStatusBarHeight(this).toInt()
         playerView.addOnStateChangeListener(object : OnStateChangeListener {
             override fun onStateChanged(state: Int) {
-                Log.e("VideoPlayActivity", "onStateChanged > $state")
+                Log.i("VideoPlayActivity", "onStateChanged > $state")
                 when (state) {
                     Media3PlayState.STATE_PLAYING -> pausedByUser = false
                     Media3PlayState.STATE_PAUSED -> pausedByUser = true
@@ -75,8 +76,8 @@ class VideoPlayActivity : AppCompatActivity() {
 
         playerView.onRequestScreenOrientationListener {
             if (it) {
-                if (requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
-                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                if (requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 }
             } else {
                 if (requestedOrientation != rememberOrientation) {
@@ -123,7 +124,6 @@ class VideoPlayActivity : AppCompatActivity() {
         }
         if (videoData?.isNotEmpty() == true) {
             playerView.setDataSource(videoData)
-            playerView.seekToItem(position, 0)
             playerView.prepare()
             playerView.start()
         }

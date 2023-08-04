@@ -54,4 +54,5 @@ dependencies {
     implementation("com.google.android.material:material:${Dependencies.google_material}")
     implementation("androidx.constraintlayout:constraintlayout:${Dependencies.androidx_constraintlayout}")
     implementation("com.geyifeng.immersionbar:immersionbar:${Dependencies.immersionbar}")
+    implementation("com.tencent:mmkv:${Dependencies.mmkv}")
 }

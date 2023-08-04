@@ -178,13 +178,11 @@
                 tools:text="蝙蝠侠大战超人.正义黎明.Batman.v.Superman.Dawn.of.Justice.2016.EXTENDED.BD1080P.X264.AC3.Mandarin.English.CHS-ENG.Adans"
                 tools:visibility="visible" />
 
-            <TextView
+            <com.jason.cloud.media3.widget.MarqueeTextView
                 android:id="@+id/media3_tv_bottom_subtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
-                android:ellipsize="end"
-                android:maxLines="3"
                 android:shadowColor="#000000"
                 android:shadowDx="0"
                 android:shadowDy="0"
@@ -211,8 +209,9 @@
                 android:id="@+id/media3_tv_video_position"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="48dp"
+                android:minWidth="50dp"
                 android:paddingEnd="5dp"
+                android:paddingStart="0dp"
                 android:shadowColor="#000000"
                 android:shadowDx="0"
                 android:shadowDy="0"
@@ -242,8 +241,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="end|center_vertical"
-                android:minWidth="48dp"
+                android:minWidth="50dp"
                 android:paddingStart="5dp"
+                android:paddingEnd="0dp"
                 android:shadowColor="#000000"
                 android:shadowDx="0"
                 android:shadowDy="0"
