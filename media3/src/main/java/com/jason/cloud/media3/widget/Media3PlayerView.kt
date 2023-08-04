@@ -78,8 +78,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private lateinit var doubleSpeedPlaying: TextView
 
     private lateinit var doubleClickLayout: LinearLayout
-    private lateinit var tvDoubleClickLeft: TextView
-    private lateinit var tvDoubleClickRight: TextView
+    private lateinit var tvDoubleClickLeft: View
+    private lateinit var tvDoubleClickRight: View
 
     private lateinit var rootContainer: FrameLayout
     private lateinit var rootView: FrameLayout
@@ -170,8 +170,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         doubleSpeedPlaying = findViewById(R.id.media3_double_speed_playing)
 
         doubleClickLayout = findViewById(R.id.media3_double_click_layout)
-        tvDoubleClickLeft = findViewById(R.id.media3_tv_double_click_left)
-        tvDoubleClickRight = findViewById(R.id.media3_tv_double_click_right)
+        tvDoubleClickLeft = findViewById(R.id.media3_double_click_left)
+        tvDoubleClickRight = findViewById(R.id.media3_double_click_right)
 
         rootContainer = findViewById(R.id.root_container)
         rootView = findViewById(R.id.root_view)
@@ -455,7 +455,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         if (internalPlayer.hasNextMediaItem()) {
             val nextIndex = internalPlayer.currentMediaItemIndex + 1
             val next = internalPlayer.getMedia3ItemAt(nextIndex)
-            val position = if (next == null) 0L else getPosition(next.url)
+            val position = if (next == null) 0L else getPosition(next)
             seekToItem(nextIndex, position)
         }
     }
@@ -464,7 +464,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         if (internalPlayer.hasPreviousMediaItem()) {
             val prevIndex = internalPlayer.currentMediaItemIndex - 1
             val next = internalPlayer.getMedia3ItemAt(prevIndex)
-            val position = if (next == null) 0L else getPosition(next.url)
+            val position = if (next == null) 0L else getPosition(next)
             seekToItem(prevIndex, position)
         }
     }
@@ -563,11 +563,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     fun onSeekBackward(value: Long) {
-        val position = internalPlayer.currentPosition - value
-        if (position < internalPlayer.duration) {
-            internalPlayer.seekTo(position)
-            showSeekBackward()
-        }
+        var position = internalPlayer.currentPosition - value
+        if (position < 0) position = 0
+        internalPlayer.seekTo(position)
+        showSeekBackward()
     }
 
     private var isInDoubleClickAnimation = false
