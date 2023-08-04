@@ -12,6 +12,7 @@ import com.jason.cloud.media3.R
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
 import com.jason.cloud.media3.model.Media3VideoItem
 import com.jason.cloud.media3.utils.Media3PlayState
+import com.jason.cloud.media3.utils.MediaPositionStore
 import com.jason.cloud.media3.utils.PlayerUtils
 import com.jason.cloud.media3.widget.Media3PlayerView
 import java.io.Serializable
@@ -23,6 +24,11 @@ class VideoPlayActivity : AppCompatActivity() {
     }
 
     companion object {
+        var positionStore: MediaPositionStore? = null
+
+        /**
+         * 如果需要记忆播放则需要每次open前设置MediaPositionStore
+         */
         fun open(context: Context?, title: String, url: String, useCache: Boolean = false) {
             context?.startActivity(Intent(context, VideoPlayActivity::class.java).apply {
                 putExtra("url", url)
@@ -31,13 +37,21 @@ class VideoPlayActivity : AppCompatActivity() {
             })
         }
 
+        /**
+         * 如果需要记忆播放则需要每次open前设置MediaPositionStore
+         */
         fun open(context: Context?, item: Media3VideoItem) {
             context?.startActivity(Intent(context, VideoPlayActivity::class.java).apply {
                 putExtra("item", item)
             })
         }
 
-        fun open(context: Context?, videoData: List<Media3VideoItem>, position: Int = 0) {
+        /**
+         * 如果需要记忆播放则需要每次open前设置MediaPositionStore
+         */
+        fun open(
+            context: Context?, videoData: List<Media3VideoItem>, position: Int = 0
+        ) {
             context?.startActivity(Intent(context, VideoPlayActivity::class.java).apply {
                 putExtra("videoData", videoData as Serializable)
                 putExtra("position", position)
@@ -62,6 +76,7 @@ class VideoPlayActivity : AppCompatActivity() {
         adaptCutoutAboveAndroidP()
         setContentView(R.layout.activity_video_play)
 
+        playerView.setPositionStore(positionStore)
         playerView.getStatusView().layoutParams.height =
             PlayerUtils.getStatusBarHeight(this).toInt()
         playerView.addOnStateChangeListener(object : OnStateChangeListener {
@@ -125,6 +140,7 @@ class VideoPlayActivity : AppCompatActivity() {
         if (videoData?.isNotEmpty() == true) {
             playerView.setDataSource(videoData)
             playerView.prepare()
+            playerView.seekToDefaultPosition(position)
             playerView.start()
         }
     }
@@ -147,5 +163,6 @@ class VideoPlayActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         playerView.release()
+        positionStore = null
     }
 }

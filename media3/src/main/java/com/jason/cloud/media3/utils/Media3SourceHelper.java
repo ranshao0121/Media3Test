@@ -185,12 +185,16 @@ public final class Media3SourceHelper {
     }
 
     private Cache newCache() {
-        //1k = 1024 * 1024
+        //1k = 1024 b
         //1M = 1024 * 1k
         //1G = 1024 * 1M
+        File cacheDir = Media3Configure.INSTANCE.getCachePoolDir();
+        if (cacheDir == null) {
+            cacheDir = new File(mAppContext.getExternalCacheDir(), "media3-cache");
+        }
         return new SimpleCache(
-                new File(mAppContext.getExternalCacheDir(), "media3-cache"),//缓存目录
-                new LeastRecentlyUsedCacheEvictor(1024L * 1024 * 1024 * 1024 * 10),//缓存大小，默认512M，使用LRU算法实现
+                cacheDir,//缓存目录
+                new LeastRecentlyUsedCacheEvictor(Media3Configure.INSTANCE.getCachePoolSize()),//缓存大小，默认512M，使用LRU算法实现
                 new StandaloneDatabaseProvider(mAppContext));
     }
 

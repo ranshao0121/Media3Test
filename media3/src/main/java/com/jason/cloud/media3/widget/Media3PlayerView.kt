@@ -36,11 +36,11 @@ import com.jason.cloud.media3.interfaces.OnMediaItemTransitionListener
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
 import com.jason.cloud.media3.model.Media3VideoItem
 import com.jason.cloud.media3.utils.FfmpegRenderersFactory
-import com.jason.cloud.media3.utils.Media3Configure
 import com.jason.cloud.media3.utils.Media3PlayState
 import com.jason.cloud.media3.utils.Media3SourceHelper
 import com.jason.cloud.media3.utils.Media3VideoScaleMode
 import com.jason.cloud.media3.utils.Media3VideoScaleMode.*
+import com.jason.cloud.media3.utils.MediaPositionStore
 import com.jason.cloud.media3.utils.PlayerUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -389,6 +389,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         internalPlayer.playWhenReady = true
     }
 
+    fun seekToDefaultPosition(mediaItemIndex: Int) {
+        internalPlayer.seekToDefaultPosition(mediaItemIndex)
+    }
+
     fun seekToItem(mediaItemIndex: Int, positionMs: Long) {
         Log.i("Media3Configure", "savePosition > line 354")
         savePosition()
@@ -489,9 +493,21 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         this.onMediaItemTransitionListeners.clear()
     }
 
+    /**********************进度管理器*********************************/
+    private var positionStore: MediaPositionStore? = null
+
+    fun setPositionStore(store: MediaPositionStore?) {
+        this.positionStore = store
+    }
+
+    private fun getPosition(item: Media3VideoItem?): Long {
+        item ?: return 0
+        return positionStore?.get(item.url) ?: 0L
+    }
+
     private fun getPosition(url: String?): Long {
         url ?: return 0
-        return Media3Configure.positionStore?.get(url) ?: 0L
+        return positionStore?.get(url) ?: 0L
     }
 
     private fun getPosition(): Long {
@@ -500,12 +516,13 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     private fun savePosition() {
+        internalPlayer.currentMediaItem ?: return
         if (internalPlayer.currentPosition >= internalPlayer.duration) {
             clearPosition()
         } else {
             val url = internalPlayer.getCurrentMedia3Item()?.url
             if (url != null) {
-                Media3Configure.positionStore?.save(url, internalPlayer.currentPosition)
+                positionStore?.save(url, internalPlayer.currentPosition)
             }
         }
     }
@@ -517,7 +534,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     private fun clearPosition(url: String?) {
         if (url != null) {
-            Media3Configure.positionStore?.remove(url)
+            positionStore?.remove(url)
         }
     }
 

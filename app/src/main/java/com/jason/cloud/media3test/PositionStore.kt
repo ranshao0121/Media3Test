@@ -1,11 +1,11 @@
 package com.jason.cloud.media3test
 
 import android.util.Log
+import com.jason.cloud.media3.utils.MediaPositionStore
 import com.jason.cloud.media3.utils.PlayerUtils
-import com.jason.cloud.media3.utils.VideoPositionStore
 import com.tencent.mmkv.MMKV
 
-open class PositionStore : VideoPositionStore {
+open class PositionStore : MediaPositionStore {
     private val mmkv by lazy { MMKV.mmkvWithID("PositionStore") }
 
     override fun get(url: String): Long {

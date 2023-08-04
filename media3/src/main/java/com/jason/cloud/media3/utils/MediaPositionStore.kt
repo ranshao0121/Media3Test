@@ -1,6 +1,6 @@
 package com.jason.cloud.media3.utils
 
-interface VideoPositionStore {
+interface MediaPositionStore {
     fun get(url: String): Long
 
     fun save(url: String, position: Long)

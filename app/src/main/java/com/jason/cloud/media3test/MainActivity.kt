@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import com.jason.cloud.media3.activity.VideoPlayActivity
 import com.jason.cloud.media3.model.Media3VideoItem
-import com.jason.cloud.media3.utils.Media3Configure
 import com.tencent.mmkv.MMKV
 import org.json.JSONObject
 
@@ -20,8 +19,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         MMKV.initialize(applicationContext)
-
-        Media3Configure.positionStore = PositionStore()
 
         fileSelectLauncher = registerForActivityResult(SelectFilesContract()) { uriList ->
             if (uriList.isNotEmpty()) {
@@ -36,7 +33,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btn_start).setOnClickListener {
-            VideoPlayActivity.open(this, loadSourceList())
+            VideoPlayActivity.positionStore = PositionStore()
+            VideoPlayActivity.open(this, loadSourceList(), 2)
         }
         findViewById<Button>(R.id.btn_select).setOnClickListener {
             fileSelectLauncher.launch("video/*")
