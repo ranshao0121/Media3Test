@@ -7,10 +7,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.jason.cloud.media3.utils.FfmpegRenderersFactory
 import com.jason.cloud.media3.interfaces.OnMediaItemTransitionListener
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
 import com.jason.cloud.media3.model.Media3VideoItem
+import com.jason.cloud.media3.utils.FfmpegRenderersFactory
 import com.jason.cloud.media3.utils.Media3PlayState
 import com.jason.cloud.media3.utils.Media3SourceHelper
 
@@ -84,11 +84,11 @@ class Media3AudioPlayer(context: Context) {
     }
 
     fun addDataSource(itemList: List<Media3VideoItem>) {
-        internalPlayer.addMediaSources(mediaSourceHelper.getMediaSource(itemList))
+        internalPlayer.addMediaSource(mediaSourceHelper.getMediaSource(itemList))
     }
 
     fun setDataSource(itemList: List<Media3VideoItem>) {
-        internalPlayer.setMediaSources(mediaSourceHelper.getMediaSource(itemList))
+        internalPlayer.setMediaSource(mediaSourceHelper.getMediaSource(itemList))
     }
 
     fun start() {

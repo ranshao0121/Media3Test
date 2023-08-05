@@ -16,7 +16,7 @@ class HalfCircleView(context: Context, attrs: AttributeSet?) : View(context, att
     private val paint = Paint()
 
     init {
-        paint.color = Color.parseColor("#10FFFFFF")
+        paint.color = Color.parseColor("#20FFFFFF")
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

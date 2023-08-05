@@ -78,8 +78,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private lateinit var doubleSpeedPlaying: TextView
 
     private lateinit var doubleClickLayout: LinearLayout
-    private lateinit var tvDoubleClickLeft: View
-    private lateinit var tvDoubleClickRight: View
+    private lateinit var doubleClickLeft: View
+    private lateinit var doubleClickRight: View
 
     private lateinit var rootContainer: FrameLayout
     private lateinit var rootView: FrameLayout
@@ -92,6 +92,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         ExoPlayer.Builder(context)
             .setAudioAttributes(AudioAttributes.DEFAULT, true)
             .setRenderersFactory(FfmpegRenderersFactory(context))
+            .setUseLazyPreparation(false)
             .build()
     }
 
@@ -170,8 +171,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         doubleSpeedPlaying = findViewById(R.id.media3_double_speed_playing)
 
         doubleClickLayout = findViewById(R.id.media3_double_click_layout)
-        tvDoubleClickLeft = findViewById(R.id.media3_double_click_left)
-        tvDoubleClickRight = findViewById(R.id.media3_double_click_right)
+        doubleClickLeft = findViewById(R.id.media3_double_click_left)
+        doubleClickRight = findViewById(R.id.media3_double_click_right)
 
         rootContainer = findViewById(R.id.root_container)
         rootView = findViewById(R.id.root_view)
@@ -298,8 +299,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         }
     }
 
-    fun setScaleMode(scaleModel: Media3VideoScaleMode) {
-        when (scaleModel) {
+    fun setScaleMode(scaleMode: Media3VideoScaleMode) {
+        when (scaleMode) {
             FIT -> ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
             FILL -> ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
             ZOOM -> ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
@@ -327,11 +328,11 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     fun addDataSource(itemList: List<Media3VideoItem>) {
-        internalPlayer.addMediaSources(mediaSourceHelper.getMediaSource(itemList))
+        internalPlayer.addMediaSource(mediaSourceHelper.getMediaSource(itemList))
     }
 
     fun setDataSource(itemList: List<Media3VideoItem>) {
-        internalPlayer.setMediaSources(mediaSourceHelper.getMediaSource(itemList))
+        internalPlayer.setMediaSource(mediaSourceHelper.getMediaSource(itemList))
     }
 
     fun start() {
@@ -339,13 +340,11 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     fun pause() {
-        Log.i("Media3Configure", "savePosition > line 303")
         savePosition()
         internalPlayer.playWhenReady = false
     }
 
     fun stop() {
-        Log.i("Media3Configure", "savePosition > line 310")
         savePosition()
         internalPlayer.stop()
     }
@@ -394,7 +393,6 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     fun seekToItem(mediaItemIndex: Int, positionMs: Long) {
-        Log.i("Media3Configure", "savePosition > line 354")
         savePosition()
         internalPlayer.seekTo(mediaItemIndex, positionMs)
     }
@@ -431,7 +429,6 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     fun release() {
-        Log.i("Media3Configure", "savePosition > line 391")
         savePosition()
         hideControlViewJob?.cancel()
         surfaceView.keepScreenOn = false
@@ -576,8 +573,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         doubleClickLayout.alpha = 0f
         doubleClickLayout.isVisible = true
 
-        tvDoubleClickLeft.visibility = View.INVISIBLE
-        tvDoubleClickRight.visibility = View.VISIBLE
+        doubleClickLeft.visibility = View.INVISIBLE
+        doubleClickRight.visibility = View.VISIBLE
 
         if (isInDoubleClickAnimation.not()) {
             isInDoubleClickAnimation = true
@@ -592,8 +589,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         doubleClickLayout.alpha = 0f
         doubleClickLayout.isVisible = true
 
-        tvDoubleClickLeft.visibility = View.VISIBLE
-        tvDoubleClickRight.visibility = View.INVISIBLE
+        doubleClickLeft.visibility = View.VISIBLE
+        doubleClickRight.visibility = View.INVISIBLE
 
         if (isInDoubleClickAnimation.not()) {
             isInDoubleClickAnimation = true
@@ -611,8 +608,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                 if (doubleClickLayout.isVisible) {
                     doubleClickLayout.animate().alpha(0f).setDuration(200).withEndAction {
                         doubleClickLayout.isVisible = false
-                        tvDoubleClickLeft.isVisible = false
-                        tvDoubleClickRight.isVisible = false
+                        doubleClickLeft.isVisible = false
+                        doubleClickRight.isVisible = false
                     }
                 }
             }

@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btn_start).setOnClickListener {
             VideoPlayActivity.positionStore = PositionStore()
-            VideoPlayActivity.open(this, loadSourceList(), 2)
+            VideoPlayActivity.open(this, loadSourceList(), 0)
         }
         findViewById<Button>(R.id.btn_select).setOnClickListener {
             fileSelectLauncher.launch("video/*")

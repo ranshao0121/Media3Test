@@ -21,6 +21,7 @@ import androidx.media3.datasource.rtmp.RtmpDataSource;
 import androidx.media3.exoplayer.dash.DashMediaSource;
 import androidx.media3.exoplayer.hls.HlsMediaSource;
 import androidx.media3.exoplayer.rtsp.RtspMediaSource;
+import androidx.media3.exoplayer.source.ConcatenatingMediaSource;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.ProgressiveMediaSource;
 
@@ -28,7 +29,6 @@ import com.jason.cloud.media3.model.Media3VideoItem;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -106,29 +106,30 @@ public final class Media3SourceHelper {
         return getMediaSource(item, item.getHeaders(), isCache);
     }
 
-    public List<MediaSource> getMediaSource(List<Media3VideoItem> itemList) {
-        ArrayList<MediaSource> sourceList = new ArrayList<>();
+    public ConcatenatingMediaSource getMediaSource(List<Media3VideoItem> itemList) {
+        ConcatenatingMediaSource source = new ConcatenatingMediaSource();
         for (int i = 0; i < itemList.size(); i++) {
             Media3VideoItem item = itemList.get(i);
-            sourceList.add(getMediaSource(item, item.getHeaders(), item.getCacheEnabled()));
+            source.addMediaSource(getMediaSource(item, item.getHeaders(), item.getCacheEnabled()));
         }
-        return sourceList;
+        return source;
     }
 
-    public List<MediaSource> getMediaSource(List<Media3VideoItem> itemList, Map<String, String> headers, boolean isCache) {
-        ArrayList<MediaSource> sourceList = new ArrayList<>();
+    public ConcatenatingMediaSource getMediaSource(List<Media3VideoItem> itemList, Map<String, String> headers, boolean isCache) {
+        ConcatenatingMediaSource source = new ConcatenatingMediaSource();
         for (int i = 0; i < itemList.size(); i++) {
-            sourceList.add(getMediaSource(itemList.get(i), headers, isCache));
+            Media3VideoItem item = itemList.get(i);
+            source.addMediaSource(getMediaSource(item, headers, isCache));
         }
-        return sourceList;
+        return source;
     }
 
-    public List<MediaSource> getMediaSource(List<Media3VideoItem> itemList, boolean isCache) {
-        ArrayList<MediaSource> sourceList = new ArrayList<>();
+    public ConcatenatingMediaSource getMediaSource(List<Media3VideoItem> itemList, boolean isCache) {
+        ConcatenatingMediaSource source = new ConcatenatingMediaSource();
         for (int i = 0; i < itemList.size(); i++) {
-            sourceList.add(getMediaSource(itemList.get(i), isCache));
+            source.addMediaSource(getMediaSource(itemList.get(i), isCache));
         }
-        return sourceList;
+        return source;
     }
 
     public MediaSource getMediaSource(Media3VideoItem item, Map<String, String> headers, boolean isCache) {

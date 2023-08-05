@@ -398,16 +398,19 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
 
                 videoPositionJob?.cancel()
                 videoPositionJob = scope.launch {
-                    var progress: Int
+                    var progress: Float
+                    var bufferedProgress: Float
                     while (isActive) {
                         delay(500)
                         if (isDragging) {
                             continue
                         }
-                        progress = (currentPosition / duration.toFloat() * 100).toInt()
+                        progress = currentPosition / duration.toFloat() * 100
+                        bufferedProgress = contentBufferedPosition / contentDuration.toFloat() * 100
+                        Log.e("ControlView", "bufferedProgress = $bufferedProgress")
                         videoSeekBar.max = 100
-                        videoSeekBar.progress = progress
-                        videoSeekBar.secondaryProgress = bufferedPercentage
+                        videoSeekBar.progress = progress.toInt()
+                        videoSeekBar.secondaryProgress = bufferedProgress.toInt()
                         tvVideoPosition.text = Util.getStringForTime(
                             formatBuilder, formatter, currentPosition
                         )
@@ -512,7 +515,6 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 add(TrackSelectEntity(3.0f, "3.0x"))
                 add(TrackSelectEntity(4.0f, "4.0x"))
                 add(TrackSelectEntity(8.0f, "8.0x"))
-                add(TrackSelectEntity(16.0f, "16.0x"))
             }
 
             val selectedPosition = list.indexOfFirst {

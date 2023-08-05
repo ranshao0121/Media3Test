@@ -24,6 +24,5 @@
             android:layout_margin="16dp"
             android:text="选择视频" />
 
-
     </RelativeLayout>
 </layout>
