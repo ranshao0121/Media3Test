@@ -8,8 +8,8 @@ import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.DefaultTrackNameProvider
+import com.jason.cloud.media3.model.Media3Item
 import com.jason.cloud.media3.model.Media3Track
-import com.jason.cloud.media3.model.Media3VideoItem
 
 
 @SuppressLint("UnsafeOptInUsageError")
@@ -17,16 +17,16 @@ fun ExoPlaybackException.toMessage(): String {
     return "$errorCode : $errorCodeName"
 }
 
-fun ExoPlayer.getCurrentMedia3Item(): Media3VideoItem? {
+fun ExoPlayer.getCurrentMedia3Item(): Media3Item? {
     val tag = currentMediaItem?.localConfiguration?.tag ?: return null
-    if (tag !is Media3VideoItem) return null
+    if (tag !is Media3Item) return null
     return tag
 }
 
-fun ExoPlayer.getMedia3ItemAt(index: Int): Media3VideoItem? {
+fun ExoPlayer.getMedia3ItemAt(index: Int): Media3Item? {
     if (index in 0 until mediaItemCount) {
         val tag = getMediaItemAt(index).localConfiguration?.tag
-        if (tag !is Media3VideoItem) return null
+        if (tag !is Media3Item) return null
         return tag
     }
     return null

@@ -25,8 +25,8 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.Util
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.dialog.TrackSelectDialog
+import com.jason.cloud.media3.model.Media3Item
 import com.jason.cloud.media3.model.Media3Track
-import com.jason.cloud.media3.model.Media3VideoItem
 import com.jason.cloud.media3.model.TrackSelectEntity
 import com.jason.cloud.media3.utils.CutoutUtil
 import com.jason.cloud.media3.utils.Media3VideoScaleMode
@@ -333,7 +333,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         super.onMediaItemTransition(mediaItem, reason)
         val tag = mediaItem?.localConfiguration?.tag
-        if (tag is Media3VideoItem) {
+        if (tag is Media3Item) {
             Log.e("Media3PlayerControlView", "onMediaItemTransition: ${tag.title}")
         }
         updateNextButtonAction()
@@ -441,7 +441,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
             }
 
             val tag = player.currentMediaItem?.localConfiguration?.tag
-            if (tag is Media3VideoItem) {
+            if (tag is Media3Item) {
                 tvBottomTitle.text = tag.title
                 tvBottomTitle.isVisible = tag.title.isNotBlank()
                 tvBottomSubtitle.text = tag.subtitle
@@ -571,7 +571,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
             val list = ArrayList<TrackSelectEntity>().apply {
                 for (i in 0 until player.mediaItemCount) {
                     val tag = player.getMediaItemAt(i).localConfiguration?.tag
-                    if (tag is Media3VideoItem) {
+                    if (tag is Media3Item) {
                         val name = if (tag.subtitle.isBlank()) tag.title else {
                             tag.title + " / " + tag.subtitle
                         }

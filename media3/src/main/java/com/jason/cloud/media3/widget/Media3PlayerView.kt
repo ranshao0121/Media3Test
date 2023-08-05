@@ -33,8 +33,9 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.interfaces.OnControlViewVisibleListener
 import com.jason.cloud.media3.interfaces.OnMediaItemTransitionListener
+import com.jason.cloud.media3.interfaces.OnPlayCompleteListener
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
-import com.jason.cloud.media3.model.Media3VideoItem
+import com.jason.cloud.media3.model.Media3Item
 import com.jason.cloud.media3.utils.FfmpegRenderersFactory
 import com.jason.cloud.media3.utils.Media3PlayState
 import com.jason.cloud.media3.utils.Media3SourceHelper
@@ -107,6 +108,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private var onControlViewVisibleListener: OnControlViewVisibleListener? = null
     private var onPlayStateListeners = ArrayList<OnStateChangeListener>()
     private var onMediaItemTransitionListeners = ArrayList<OnMediaItemTransitionListener>()
+    private var onPlayCompleteListeners = ArrayList<OnPlayCompleteListener>()
     private var onRequestScreenOrientationListener: ((isFullScreen: Boolean) -> Unit)? = null
 
     init {
@@ -258,6 +260,9 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                             prepare()
                             start()
                         }
+                        onPlayCompleteListeners.forEach {
+                            it.onCompletion()
+                        }
                     }
 
                     Player.STATE_IDLE -> {
@@ -315,7 +320,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         }
     }
 
-    fun setDataSource(item: Media3VideoItem) {
+    fun setDataSource(item: Media3Item) {
         internalPlayer.setMediaSource(mediaSourceHelper.getMediaSource(item))
     }
 
@@ -327,11 +332,11 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         internalPlayer.setMediaSource(mediaSourceHelper.getMediaSource(path, headers, false))
     }
 
-    fun addDataSource(itemList: List<Media3VideoItem>) {
+    fun addDataSource(itemList: List<Media3Item>) {
         internalPlayer.addMediaSource(mediaSourceHelper.getMediaSource(itemList))
     }
 
-    fun setDataSource(itemList: List<Media3VideoItem>) {
+    fun setDataSource(itemList: List<Media3Item>) {
         internalPlayer.setMediaSource(mediaSourceHelper.getMediaSource(itemList))
     }
 
@@ -448,6 +453,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         return internalPlayer.hasPreviousMediaItem()
     }
 
+    fun getCurrentMedia3Item(): Media3Item? {
+        return internalPlayer.getCurrentMedia3Item()
+    }
+
     fun seekToNext() {
         if (internalPlayer.hasNextMediaItem()) {
             val nextIndex = internalPlayer.currentMediaItemIndex + 1
@@ -490,6 +499,18 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         this.onMediaItemTransitionListeners.clear()
     }
 
+    fun clearOnPlayCompleteListener() {
+        this.onPlayCompleteListeners.clear()
+    }
+
+    fun removeOnPlayCompleteListener(listener: OnPlayCompleteListener) {
+        this.onPlayCompleteListeners.remove(listener)
+    }
+
+    fun addOnPlayCompleteListener(listener: OnPlayCompleteListener) {
+        this.onPlayCompleteListeners.add(listener)
+    }
+
     /**********************进度管理器*********************************/
     private var positionStore: MediaPositionStore? = null
 
@@ -497,7 +518,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         this.positionStore = store
     }
 
-    private fun getPosition(item: Media3VideoItem?): Long {
+    private fun getPosition(item: Media3Item?): Long {
         item ?: return 0
         return positionStore?.get(item.url) ?: 0L
     }
@@ -524,7 +545,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         }
     }
 
-    private fun clearPosition(item: Media3VideoItem?) {
+    private fun clearPosition(item: Media3Item?) {
         item ?: return
         clearPosition(item.url)
     }

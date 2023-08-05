@@ -7,7 +7,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import com.jason.cloud.media3.activity.VideoPlayActivity
-import com.jason.cloud.media3.model.Media3VideoItem
+import com.jason.cloud.media3.model.Media3Item
 import com.tencent.mmkv.MMKV
 import org.json.JSONObject
 
@@ -22,11 +22,11 @@ class MainActivity : AppCompatActivity() {
 
         fileSelectLauncher = registerForActivityResult(SelectFilesContract()) { uriList ->
             if (uriList.isNotEmpty()) {
-                VideoPlayActivity.open(this, ArrayList<Media3VideoItem>().apply {
+                VideoPlayActivity.open(this, ArrayList<Media3Item>().apply {
                     uriList.forEach { uri ->
                         val file = DocumentFile.fromSingleUri(this@MainActivity, uri)
                         val name = file?.name ?: uri.toString()
-                        add(Media3VideoItem.create(name, uri.toString()))
+                        add(Media3Item.create(name, uri.toString()))
                     }
                 })
             }
@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadSourceList(): List<Media3VideoItem> {
-        return ArrayList<Media3VideoItem>().apply {
+    private fun loadSourceList(): List<Media3Item> {
+        return ArrayList<Media3Item>().apply {
             assets.open("sources.json").use {
                 it.readBytes().decodeToString()
             }.let {
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
                 for (i in 0 until list.length()) {
                     val obj = list.getJSONObject(i)
                     add(
-                        Media3VideoItem.create(
+                        Media3Item.create(
                             obj.getString("name"),
                             obj.getString("uri"),
                             obj.getBoolean("useCache")
