@@ -10,6 +10,7 @@ import com.jason.cloud.media3.activity.VideoPlayActivity
 import com.jason.cloud.media3.model.Media3Item
 import com.tencent.mmkv.MMKV
 import org.json.JSONObject
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private lateinit var fileSelectLauncher: ActivityResultLauncher<String>
@@ -33,8 +34,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btn_start).setOnClickListener {
-            VideoPlayActivity.positionStore = PositionStore()
-            VideoPlayActivity.open(this, loadSourceList(), 0)
+            thread {
+                val sources = loadSourceList()
+                runOnUiThread {
+                    VideoPlayActivity.positionStore = PositionStore()
+                    VideoPlayActivity.open(this, sources, 0)
+                }
+            }
         }
         findViewById<Button>(R.id.btn_select).setOnClickListener {
             fileSelectLauncher.launch("video/*")
@@ -48,14 +54,13 @@ class MainActivity : AppCompatActivity() {
             }.let {
                 val list = JSONObject(it).getJSONArray("list")
                 for (i in 0 until list.length()) {
+                    val media3Item = Media3Item()
                     val obj = list.getJSONObject(i)
-                    add(
-                        Media3Item.create(
-                            obj.getString("name"),
-                            obj.getString("uri"),
-                            obj.getBoolean("useCache")
-                        )
-                    )
+
+                    media3Item.url = obj.getString("uri")
+                    media3Item.title = obj.getString("name")
+                    media3Item.cacheEnabled = obj.getBoolean("useCache")
+                    add(media3Item)
                 }
             }
         }

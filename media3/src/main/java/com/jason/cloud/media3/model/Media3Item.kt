@@ -8,7 +8,7 @@ open class Media3Item : Serializable {
     var image: String = ""
     var subtitle: String = ""
     var cacheEnabled: Boolean = false
-    var headers: Map<String, String> = mapOf()
+    var headers: HashMap<String, String> = hashMapOf()
 
     companion object {
         fun create(title: String, url: String, cache: Boolean = false): Media3Item {

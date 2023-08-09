@@ -155,7 +155,6 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-
         <LinearLayout
             android:id="@+id/media3_slide_volume"
             android:layout_width="wrap_content"

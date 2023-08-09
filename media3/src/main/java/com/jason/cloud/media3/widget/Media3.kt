@@ -89,10 +89,6 @@ fun ExoPlayer?.getTrackList(context: Context, type: @C.TrackType Int): List<Medi
                 for (i in 0 until group.mediaTrackGroup.length) {
                     val format = group.getTrackFormat(i)
                     if (format.id != null) {
-                        Log.i(
-                            "ExoPlayer",
-                            "track: ${format.label} >> ${group.isSelected}"
-                        )
                         if (format.label == null) {
                             add(
                                 Media3Track(

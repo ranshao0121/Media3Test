@@ -2,6 +2,7 @@ package com.jason.cloud.media3.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
@@ -17,7 +18,9 @@ import com.jason.cloud.media3.utils.Media3SourceHelper
 
 @SuppressLint("UnsafeOptInUsageError")
 class Media3AudioPlayer(context: Context) {
-    private val mediaSourceHelper by lazy { Media3SourceHelper.getInstance(context) }
+    private val mediaSourceHelper by lazy {
+        Media3SourceHelper.newInstance(context.applicationContext)
+    }
     internal val internalPlayer: ExoPlayer by lazy {
         ExoPlayer.Builder(context)
             .setAudioAttributes(AudioAttributes.DEFAULT, true)
@@ -66,6 +69,8 @@ class Media3AudioPlayer(context: Context) {
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
+            Log.e("AudioPlayer", "transition = ${internalPlayer.getCurrentMedia3Item()?.title}")
+            Log.e("AudioPlayer", "transition = $reason")
             onMediaItemTransitionListeners.forEach {
                 it.onTransition(
                     internalPlayer.currentMediaItemIndex,
@@ -196,16 +201,16 @@ class Media3AudioPlayer(context: Context) {
         return internalPlayer.mediaItemCount
     }
 
+    fun getCurrentMedia3Item(): Media3Item? {
+        return internalPlayer.getCurrentMedia3Item()
+    }
+
     fun hasNextMediaItem(): Boolean {
         return internalPlayer.hasNextMediaItem()
     }
 
     fun hasPreviousMediaItem(): Boolean {
         return internalPlayer.hasPreviousMediaItem()
-    }
-
-    fun getCurrentMedia3Item(): Media3Item? {
-        return internalPlayer.getCurrentMedia3Item()
     }
 
     fun seekToNext() {

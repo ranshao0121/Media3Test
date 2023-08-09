@@ -149,11 +149,11 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
             ibLock.setOnClickListener {
                 toggleLockState()
             }
-            ibLargerLock.setOnClickListener {
-                toggleLockState()
-            }
             ibRotation.setOnClickListener {
                 toggleFullScreen()
+            }
+            ibLargerLock.setOnClickListener {
+                toggleLockState()
             }
         }
     }
@@ -407,7 +407,6 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                         }
                         progress = currentPosition / duration.toFloat() * 100
                         bufferedProgress = contentBufferedPosition / contentDuration.toFloat() * 100
-                        Log.e("ControlView", "bufferedProgress = $bufferedProgress")
                         videoSeekBar.max = 100
                         videoSeekBar.progress = progress.toInt()
                         videoSeekBar.secondaryProgress = bufferedProgress.toInt()
@@ -542,8 +541,8 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 add(TrackSelectEntity(Media3VideoScaleMode.FIT, "自适应"))
                 add(TrackSelectEntity(Media3VideoScaleMode.ZOOM, "居中裁剪"))
                 add(TrackSelectEntity(Media3VideoScaleMode.FILL, "填充屏幕"))
-                add(TrackSelectEntity(Media3VideoScaleMode.FIXED_WIDTH, "宽度自适应"))
-                add(TrackSelectEntity(Media3VideoScaleMode.FIXED_HEIGHT, "高度自适应"))
+                add(TrackSelectEntity(Media3VideoScaleMode.FIXED_WIDTH, "宽度固定"))
+                add(TrackSelectEntity(Media3VideoScaleMode.FIXED_HEIGHT, "高度固定"))
             }
 
             val selectedPosition = list.indexOfFirst {

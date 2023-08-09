@@ -51,4 +51,5 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:${Dependencies.androidx_constraintlayout}")
     implementation("com.geyifeng.immersionbar:immersionbar:${Dependencies.immersionbar}")
     implementation("com.tencent:mmkv:${Dependencies.mmkv}")
+    implementation("com.squareup.okhttp3:okhttp:${Dependencies.okhttp3}")
 }
