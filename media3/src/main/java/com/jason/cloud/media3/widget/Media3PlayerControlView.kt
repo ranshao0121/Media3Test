@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -28,6 +29,7 @@ import com.jason.cloud.media3.dialog.TrackSelectDialog
 import com.jason.cloud.media3.model.Media3Item
 import com.jason.cloud.media3.model.Media3Track
 import com.jason.cloud.media3.model.TrackSelectEntity
+import com.jason.cloud.media3.utils.CutoutArea
 import com.jason.cloud.media3.utils.CutoutUtil
 import com.jason.cloud.media3.utils.Media3VideoScaleMode
 import com.jason.cloud.media3.utils.PlayerUtils
@@ -84,6 +86,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
 
     private var isBatteryReceiverRegister = false
     private var onBackPressedListener: (() -> Unit)? = null
+    private var cutoutArea: CutoutArea = CutoutArea.UNKNOWN
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
@@ -149,11 +152,11 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
             ibLock.setOnClickListener {
                 toggleLockState()
             }
-            ibRotation.setOnClickListener {
-                toggleFullScreen()
-            }
             ibLargerLock.setOnClickListener {
                 toggleLockState()
+            }
+            ibRotation.setOnClickListener {
+                toggleFullScreen()
             }
         }
     }
@@ -185,6 +188,24 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
         ibRotation = findViewById(R.id.media3_ib_rotation)
         bottomBar = findViewById(R.id.media3_bottom_bar)
         ibLargerLock = findViewById(R.id.media3_ib_larger_lock)
+    }
+
+    fun setCutoutArea(cutoutRect: Rect) {
+        if (cutoutRect.isEmpty) {
+            this.cutoutArea = CutoutArea.UNKNOWN
+        } else {
+            val width = cutoutRect.right - cutoutRect.left
+            val center = cutoutRect.right - width / 2
+            if (cutoutRect.right < context.resources.displayMetrics.widthPixels / 2) {
+                this.cutoutArea = CutoutArea.LEFT
+            } else if (cutoutRect.left > context.resources.displayMetrics.widthPixels / 2) {
+                this.cutoutArea = CutoutArea.RIGHT
+            } else if (center == context.resources.displayMetrics.widthPixels / 2) {
+                this.cutoutArea = CutoutArea.CENTER
+            } else {
+                this.cutoutArea = CutoutArea.UNKNOWN
+            }
+        }
     }
 
     private fun toggleFullScreen() {
@@ -233,9 +254,14 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                 }
             } else { //有刘海
                 if (playerView?.isInFullscreen == true) { //非全屏情况下
-                    titleBar.setPadding(statusHeight, 0, 0, 0)
-                    bottomBar.setPadding(statusHeight, 0, 0, 0)
                     statusView.layoutParams.height = 0
+                    if (cutoutArea == CutoutArea.CENTER) {
+                        titleBar.setPadding(0, 0, 0, 0)
+                        bottomBar.setPadding(0, 0, 0, 0)
+                    } else {
+                        titleBar.setPadding(statusHeight, 0, 0, 0)
+                        bottomBar.setPadding(statusHeight, 0, 0, 0)
+                    }
                 } else {
                     titleBar.setPadding(0, 0, 0, 0)
                     bottomBar.setPadding(0, 0, 0, 0)
@@ -407,6 +433,7 @@ class Media3PlayerControlView(context: Context, attrs: AttributeSet?) : FrameLay
                         }
                         progress = currentPosition / duration.toFloat() * 100
                         bufferedProgress = contentBufferedPosition / contentDuration.toFloat() * 100
+                        Log.e("ControlView", "bufferedProgress = $bufferedProgress")
                         videoSeekBar.max = 100
                         videoSeekBar.progress = progress.toInt()
                         videoSeekBar.secondaryProgress = bufferedProgress.toInt()

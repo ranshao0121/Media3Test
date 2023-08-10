@@ -172,7 +172,7 @@ class Media3GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(co
         if (!gestureDetector.onTouchEvent(event)) {
             when (event.action) {
                 MotionEvent.ACTION_UP -> {
-                    onStopSlide()
+                    playerView.onStopSlide()
                     if (seekPosition >= 0) {
                         playerView.seekTo(seekPosition)
                         seekPosition = -1
@@ -180,16 +180,12 @@ class Media3GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(co
                 }
 
                 MotionEvent.ACTION_CANCEL -> {
-                    onStopSlide()
+                    playerView.onStopSlide()
                     seekPosition = -1
                 }
             }
         }
         return super.onTouchEvent(event)
-    }
-
-    private fun onStopSlide() {
-        playerView.onStopSlide()
     }
 
     override fun onLongPress(e: MotionEvent) {

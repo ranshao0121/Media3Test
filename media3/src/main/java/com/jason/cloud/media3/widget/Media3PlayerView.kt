@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -254,7 +255,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                         currentPlayState = Media3PlayState.STATE_PREPARED
                         startHideControlViewJob()
 
-                        if (isFirstStart) { //媒体首次加载成功，跳转到记忆位置
+                        if (isFirstStart) {//媒体首次加载成功，跳转到记忆位置
                             isFirstStart = false
                             val position = getPosition()
                             if (position > 0L) {
@@ -792,6 +793,22 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                 it.systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 it.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
+    fun updateCutoutAreaWhenResume() {
+        PlayerUtils.scanForActivity(context)?.run {
+            window.decorView.post {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    window.decorView.rootWindowInsets?.displayCutout?.let {
+                        it.boundingRects.let { list ->
+                            if (list.isNotEmpty()) {
+                                controlView.setCutoutArea(list.first())
+                            }
+                        }
+                    }
+                }
             }
         }
     }
