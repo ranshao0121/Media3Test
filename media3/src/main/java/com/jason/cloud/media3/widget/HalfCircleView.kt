@@ -16,7 +16,8 @@ class HalfCircleView(context: Context, attrs: AttributeSet?) : View(context, att
     private val paint = Paint()
 
     init {
-        paint.color = Color.parseColor("#20FFFFFF")
+        paint.color = Color.parseColor("#FFFFFF")
+        paint.alpha = 40
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -31,7 +32,6 @@ class HalfCircleView(context: Context, attrs: AttributeSet?) : View(context, att
         val circleCenter = calculateCircleCenter(pointA, pointB, pointC)
         val centerX = circleCenter.x
         val centerY = circleCenter.y
-        println("圆心坐标：($centerX, $centerY)")
         val radius = abs(centerX - pointB.x)
 
         canvas.drawCircle(centerX, centerY, radius, paint)
@@ -62,6 +62,4 @@ class HalfCircleView(context: Context, attrs: AttributeSet?) : View(context, att
 
         return PointF(centerX, centerY)
     }
-
-
 }

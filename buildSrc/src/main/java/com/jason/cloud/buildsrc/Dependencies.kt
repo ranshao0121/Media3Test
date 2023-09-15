@@ -10,7 +10,7 @@ object Dependencies {
 
     const val google_material = "1.9.0"
 
-    const val okhttp3 = "4.10.0"
+    const val okhttp3 = "4.11.0"
     const val qiniu_dns = "2.0.1"
 
     const val net = "3.5.8"

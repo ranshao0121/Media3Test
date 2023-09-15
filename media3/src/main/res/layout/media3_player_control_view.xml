@@ -10,7 +10,8 @@
     <LinearLayout
         android:id="@+id/media3_title_bar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
+        android:minHeight="56dp"
         android:background="@drawable/shape_media3_player_controller_title"
         android:orientation="vertical"
         android:visibility="invisible"

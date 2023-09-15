@@ -388,11 +388,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     fun isPlaying(): Boolean {
-        return when (internalPlayer.playbackState) {
-            Player.STATE_BUFFERING, Player.STATE_READY -> internalPlayer.playWhenReady
-            Player.STATE_IDLE, Player.STATE_ENDED -> false
-            else -> false
-        }
+        return internalPlayer.isPlaying
     }
 
     fun currentPlayState(): Int {
