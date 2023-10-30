@@ -1,6 +1,6 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="@color/colorSecondary" />
+    <solid android:color="?attr/colorPrimaryInverse" />
     <size
         android:width="15dp"
         android:height="15dp" />

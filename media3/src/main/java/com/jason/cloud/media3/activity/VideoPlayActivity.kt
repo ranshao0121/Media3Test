@@ -3,6 +3,7 @@ package com.jason.cloud.media3.activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -16,12 +17,13 @@ import com.jason.cloud.media3.model.Media3Item
 import com.jason.cloud.media3.utils.Media3PlayState
 import com.jason.cloud.media3.utils.MediaPositionStore
 import com.jason.cloud.media3.utils.PlayerUtils
+import com.jason.cloud.media3.utils.getCurrentOrientation
 import com.jason.cloud.media3.widget.Media3PlayerView
 import java.io.Serializable
 
-class VideoPlayActivity : AppCompatActivity() {
+open class VideoPlayActivity : AppCompatActivity() {
     private var pausedByUser = false
-    private val playerView: Media3PlayerView by lazy {
+    protected val playerView: Media3PlayerView by lazy {
         findViewById(R.id.player_view)
     }
 
@@ -45,6 +47,18 @@ class VideoPlayActivity : AppCompatActivity() {
         fun open(context: Context?, item: Media3Item) {
             context?.startActivity(Intent(context, VideoPlayActivity::class.java).apply {
                 putExtra("item", item)
+            })
+        }
+
+        /**
+         * 跳转到媒体的指定位置开始播放
+         */
+        fun open(context: Context?, title: String, url: String, position: Long) {
+            context?.startActivity(Intent(context, VideoPlayActivity::class.java).apply {
+                putExtra("url", url)
+                putExtra("title", title)
+                putExtra("position", position)
+                putExtra("useCache", false)
             })
         }
 
@@ -77,10 +91,12 @@ class VideoPlayActivity : AppCompatActivity() {
         rememberOrientation = requestedOrientation
         adaptCutoutAboveAndroidP()
         setContentView(R.layout.activity_video_play)
-
+        playerView.onBackPressed { callBackPressed() }
+//        playerView.setShowTitleBarInPortrait(true)
         playerView.setPositionStore(positionStore)
         playerView.getStatusView().layoutParams.height =
             PlayerUtils.getStatusBarHeight(this).toInt()
+
         playerView.addOnStateChangeListener(object : OnStateChangeListener {
             override fun onStateChanged(state: Int) {
                 Log.i("VideoPlayActivity", "onStateChanged > $state")
@@ -107,6 +123,8 @@ class VideoPlayActivity : AppCompatActivity() {
         val title = intent.getStringExtra("title")
         val useCache = intent.getBooleanExtra("useCache", false)
         if (url?.isNotBlank() == true && title?.isNotBlank() == true) {
+            val position = intent.getLongExtra("position", 0)
+            playerView.seekTo(position)
             playerView.setDataSource(Media3Item.create(title, url, useCache))
             playerView.prepare()
             playerView.start()
@@ -153,7 +171,8 @@ class VideoPlayActivity : AppCompatActivity() {
                         .show()
                     return
                 }
-                if (playerView.isInFullscreen) {
+
+                if (getCurrentOrientation() == Configuration.ORIENTATION_LANDSCAPE) {
                     playerView.cancelFullScreen()
                     return
                 }
@@ -191,6 +210,10 @@ class VideoPlayActivity : AppCompatActivity() {
     private var exitTime: Long = 0
 
     private fun callBackPressed() {
+        if (getCurrentOrientation() == Configuration.ORIENTATION_LANDSCAPE) {
+            playerView.cancelFullScreen()
+            return
+        }
         if (!playerView.isPlaying()) {
             finish()
         } else {

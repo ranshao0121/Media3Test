@@ -12,7 +12,6 @@ import androidx.media3.ui.DefaultTrackNameProvider
 import com.jason.cloud.media3.model.Media3Item
 import com.jason.cloud.media3.model.Media3Track
 
-
 @SuppressLint("UnsafeOptInUsageError")
 fun ExoPlaybackException.toZhMessage(): String {
     return "$errorCode : " + getErrorCodeNameInZh()
@@ -23,7 +22,7 @@ fun ExoPlaybackException.getErrorCodeNameInZh(): String {
     return when (errorCode) {
         PlaybackException.ERROR_CODE_UNSPECIFIED -> "未知错误"
         PlaybackException.ERROR_CODE_REMOTE_ERROR -> "远程错误"
-        PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW -> "BEHIND_LIVE_WINDOW(??没理解??)"
+        PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW -> "媒体播放超时"
         PlaybackException.ERROR_CODE_TIMEOUT -> "请求媒体超时"
         PlaybackException.ERROR_CODE_FAILED_RUNTIME_CHECK -> "运行时检查出错"
         PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> "未知的输入输出错误"
@@ -41,7 +40,7 @@ fun ExoPlaybackException.getErrorCodeNameInZh(): String {
         PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED -> "不支持的媒体清单类型"
         PlaybackException.ERROR_CODE_DECODER_INIT_FAILED -> "初始化解码器失败"
         PlaybackException.ERROR_CODE_DECODER_QUERY_FAILED -> "查询解码器求失败"
-        PlaybackException.ERROR_CODE_DECODING_FAILED -> "解码媒体文件失败"
+        PlaybackException.ERROR_CODE_DECODING_FAILED -> "媒体文件解码失败"
         PlaybackException.ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES -> "解码格式超出能力范围"
         PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED -> "解码格式不受支持"
         PlaybackException.ERROR_CODE_AUDIO_TRACK_INIT_FAILED -> "音轨初始化失败"
@@ -79,36 +78,21 @@ fun ExoPlayer.getMedia3ItemAt(index: Int): Media3Item? {
 @SuppressLint("UnsafeOptInUsageError")
 fun ExoPlayer?.getTrackList(context: Context, type: @C.TrackType Int): List<Media3Track> {
     this ?: return emptyList()
-    val player = this
     val trackNameProvider = DefaultTrackNameProvider(context.resources)
     return ArrayList<Media3Track>().apply {
-        player.currentTracks.groups.filter {
+        currentTracks.groups.filter {
             it.type == type
         }.forEach { group ->
-            if (group.type == type) {
-                for (i in 0 until group.mediaTrackGroup.length) {
-                    val format = group.getTrackFormat(i)
-                    if (format.id != null) {
-                        if (format.label == null) {
-                            add(
-                                Media3Track(
-                                    format.id!!,
-                                    trackNameProvider.getTrackName(format),
-                                    type,
-                                    group.isSelected
-                                )
-                            )
-                        } else {
-                            add(
-                                Media3Track(
-                                    format.id!!,
-                                    trackNameProvider.getTrackName(format) + "(${format.label})",
-                                    type,
-                                    group.isSelected
-                                )
-                            )
-                        }
+            for (i in 0 until group.mediaTrackGroup.length) {
+                val format = group.getTrackFormat(i)
+                if (format.id != null) {
+                    val trackName = trackNameProvider.getTrackName(format)
+                    val name = if (format.label.isNullOrBlank() || format.label == trackName) {
+                        trackName
+                    } else {
+                        trackName + "(${format.label})"
                     }
+                    add(Media3Track(format.id!!, name, type, format.language, group.isSelected))
                 }
             }
         }
@@ -127,6 +111,7 @@ fun ExoPlayer?.selectTrack(track: Media3Track) {
             if (id == track.id) {
                 val selection = TrackSelectionOverride(group.mediaTrackGroup, 0)
                 trackSelectionParameters = trackSelectionParameters.buildUpon()
+                    .clearOverridesOfType(track.type)
                     .setOverrideForType(selection).build()
                 break
             }

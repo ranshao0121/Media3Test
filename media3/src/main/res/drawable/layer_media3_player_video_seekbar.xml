@@ -18,7 +18,7 @@
         <clip>
             <shape>
                 <corners android:radius="50dp" />
-                <solid android:color="@color/colorSecondary" />
+                <solid android:color="?attr/colorPrimaryInverse" />
             </shape>
         </clip>
     </item>

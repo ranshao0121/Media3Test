@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:weightSum="1">
+
+    <View
+        android:id="@+id/touch_outside"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="0.4" />
+
+    <ListView
+        android:id="@+id/rv_selection"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="0.6"
+        android:background="@drawable/shape_media3_track_select_background"
+        android:divider="@null"
+        android:fadingEdge="vertical"
+        android:fadingEdgeLength="20dp"
+        app:spanCount="1"
+        tools:listheader="@layout/item_media3_track_select_header"
+        tools:listitem="@layout/item_media3_track_select" />
+</LinearLayout>

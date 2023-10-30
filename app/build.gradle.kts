@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.jason.cloud.media3test"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.jason.cloud.media3test"
@@ -42,9 +42,6 @@ android {
 }
 
 dependencies {
-    implementation(project(mapOf("path" to ":theme")))
-    implementation(project(mapOf("path" to ":media3")))
-
     implementation("androidx.core:core-ktx:${Dependencies.androidx_core_ktx}")
     implementation("androidx.appcompat:appcompat:${Dependencies.androidx_appcompat}")
     implementation("com.google.android.material:material:${Dependencies.google_material}")
@@ -52,4 +49,6 @@ dependencies {
     implementation("com.geyifeng.immersionbar:immersionbar:${Dependencies.immersionbar}")
     implementation("com.tencent:mmkv:${Dependencies.mmkv}")
     implementation("com.squareup.okhttp3:okhttp:${Dependencies.okhttp3}")
+
+    implementation(project(mapOf("path" to ":media3")))
 }

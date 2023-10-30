@@ -11,11 +11,10 @@
         android:id="@+id/media3_title_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="56dp"
         android:background="@drawable/shape_media3_player_controller_title"
         android:orientation="vertical"
-        android:visibility="invisible"
-        tools:visibility="gone">
+        android:visibility="visible"
+        tools:visibility="visible">
 
         <View
             android:id="@+id/status_view"
@@ -24,7 +23,8 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
+            android:minHeight="60dp"
             android:background="@android:color/transparent"
             android:gravity="top"
             android:orientation="horizontal">
@@ -52,6 +52,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="16dp"
                 android:shadowColor="#000000"
                 android:shadowDx="0"
                 android:shadowDy="0"
@@ -62,20 +64,36 @@
                 tools:text="蝙蝠侠大战超人.正义黎明.Batman.v.Superman.Dawn.of.Justice.2016.EXTENDED.BD1080P.X264.AC3.Mandarin.English.CHS-ENG.Adans" />
 
             <LinearLayout
+                android:id="@+id/time_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="10dp"
-                android:paddingLeft="16dp"
-                android:paddingEnd="16dp"
-                android:paddingRight="16dp">
+                android:paddingStart="0dp"
+                android:paddingEnd="16dp">
+
+                <TextClock
+                    android:id="@+id/media3_tv_clock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:format12Hour="hh:mm"
+                    android:format24Hour="HH:mm"
+                    android:shadowColor="#000000"
+                    android:shadowDx="0"
+                    android:shadowDy="0"
+                    android:shadowRadius="1"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    tools:text="20:47" />
+
+                <Space
+                    android:layout_width="8dp"
+                    android:layout_height="wrap_content" />
 
                 <ImageView
                     android:id="@+id/media3_iv_battery"
                     android:layout_width="15dp"
                     android:layout_height="15dp"
-                    android:layout_marginStart="5dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_media3_player_battery_level"
                     app:tint="@android:color/white" />
@@ -95,38 +113,20 @@
                     android:textColor="@android:color/white"
                     android:textSize="14sp"
                     tools:text="20%" />
-
-                <Space
-                    android:layout_width="8dp"
-                    android:layout_height="wrap_content" />
-
-                <TextClock
-                    android:id="@+id/media3_tv_clock"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:format12Hour="hh:mm"
-                    android:format24Hour="HH:mm"
-                    android:shadowColor="#000000"
-                    android:shadowDx="0"
-                    android:shadowDy="0"
-                    android:shadowRadius="1"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    tools:text="20:47" />
             </LinearLayout>
 
         </LinearLayout>
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="24dp" />
+            android:layout_height="20dp" />
     </LinearLayout>
 
     <ImageButton
         android:id="@+id/media3_ib_lock"
         android:layout_width="44dp"
         android:layout_height="44dp"
-        android:layout_above="@id/media3_bottom_bar"
+        android:layout_above="@id/tv_source_info"
         android:layout_alignParentEnd="true"
         android:layout_gravity="center"
         android:layout_marginEnd="4dp"
@@ -140,6 +140,25 @@
         app:tint="@color/color_media3_player_button_press_tint"
         tools:ignore="SpeakableTextPresentCheck,SpeakableTextPresentCheck"
         tools:targetApi="o" />
+
+    <TextView
+        android:id="@+id/tv_source_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/media3_bottom_bar"
+        android:layout_gravity="bottom"
+        android:alpha="0.7"
+        android:paddingStart="16dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="2dp"
+        android:shadowColor="@android:color/black"
+        android:shadowRadius="2"
+        android:textColor="@android:color/white"
+        android:textSize="11sp"
+        android:visibility="gone"
+        tools:text="资源数：121 / 234 | 123 KB/s"
+        tools:visibility="visible" />
 
     <LinearLayout
         android:id="@+id/media3_bottom_bar"
@@ -228,15 +247,16 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:max="1000"
+                android:max="100"
                 android:maxHeight="2dp"
                 android:minHeight="2dp"
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
+                tools:progress="99"
                 android:progressDrawable="@drawable/layer_media3_player_video_seekbar"
                 android:thumb="@drawable/shape_media3_player_video_seek_thumb"
                 android:thumbOffset="0dp"
-                tools:secondaryProgress="500" />
+                tools:secondaryProgress="50" />
 
             <TextView
                 android:id="@+id/media3_tv_video_duration"
@@ -286,15 +306,17 @@
                 tools:targetApi="o" />
 
             <TextView
-                android:id="@+id/media3_tv_video_size"
+                android:id="@+id/media3_tv_end_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:alpha="0.5"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
                 android:textColor="#FFFFFF"
+                android:textSize="14sp"
                 android:visibility="gone"
-                tools:text="1920 × 1080" />
+                tools:text="将于上午 6:50 播放结束"
+                tools:visibility="gone" />
 
             <Space
                 android:layout_width="0dp"
@@ -322,7 +344,7 @@
                 android:contentDescription="@string/media3_select_subtitles"
                 android:scaleType="centerInside"
                 android:tooltipText="@string/media3_select_subtitles"
-                app:srcCompat="@drawable/ic_media3_contra_button_subtitle"
+                app:srcCompat="@drawable/ic_media3_contra_button_subtitle_24"
                 app:tint="@color/color_media3_player_button_tint"
                 tools:targetApi="o" />
 

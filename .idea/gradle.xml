@@ -14,7 +14,6 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/media3" />
-            <option value="$PROJECT_DIR$/theme" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -2,6 +2,7 @@ package com.jason.cloud.media3.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -26,13 +27,13 @@ import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.SubtitleView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.jason.cloud.media3.R
-import com.jason.cloud.media3.interfaces.OnControlViewVisibleListener
 import com.jason.cloud.media3.interfaces.OnMediaItemTransitionListener
 import com.jason.cloud.media3.interfaces.OnPlayCompleteListener
 import com.jason.cloud.media3.interfaces.OnStateChangeListener
@@ -44,20 +45,25 @@ import com.jason.cloud.media3.utils.Media3VideoScaleMode
 import com.jason.cloud.media3.utils.Media3VideoScaleMode.*
 import com.jason.cloud.media3.utils.MediaPositionStore
 import com.jason.cloud.media3.utils.PlayerUtils
+import com.jason.cloud.media3.utils.getCurrentOrientation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @SuppressLint("UnsafeOptInUsageError")
 class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
     private lateinit var ivHolderBackground: ImageView
     private lateinit var subtitleView: SubtitleView
     private lateinit var ratioContentFrame: AspectRatioFrameLayout
+
+    lateinit var trackView: Media3TrackView
+    lateinit var controlView: Media3PlayerControlView
     private lateinit var gestureView: Media3GestureView
-    private lateinit var controlView: Media3PlayerControlView
+
     private lateinit var errorMessage: TextView
     private lateinit var errorStatusBtn: TextView
     private lateinit var errorLayout: LinearLayout
@@ -92,11 +98,21 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     private var currentPlayState = Media3PlayState.STATE_IDLE
+
     internal val internalPlayer: ExoPlayer by lazy {
         ExoPlayer.Builder(context)
-            .setAudioAttributes(AudioAttributes.DEFAULT, true)
-            .setRenderersFactory(FfmpegRenderersFactory(context))
             .setUseLazyPreparation(false)
+            .setRenderersFactory(FfmpegRenderersFactory(context))
+            .setAudioAttributes(
+                AudioAttributes.Builder().setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                    .setUsage(C.USAGE_MEDIA).build(), true
+            )
+            .setTrackSelector(DefaultTrackSelector(context.applicationContext).apply {
+                buildUponParameters()
+                    .setTunnelingEnabled(true)
+                    .setPreferredAudioLanguage(Locale.getDefault().language)
+                    .setPreferredTextLanguage(Locale.getDefault().language)
+            })
             .build()
     }
 
@@ -104,11 +120,9 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     private var hideControlViewJob: Job? = null
 
     internal var isLocked = false
-    internal var isInFullscreen = false
     private var isInSliding = false
 
     private lateinit var playerListener: Player.Listener
-    private var onControlViewVisibleListener: OnControlViewVisibleListener? = null
     private var onPlayStateListeners = ArrayList<OnStateChangeListener>()
     private var onMediaItemTransitionListeners = ArrayList<OnMediaItemTransitionListener>()
     private var onPlayCompleteListeners = ArrayList<OnPlayCompleteListener>()
@@ -116,22 +130,24 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     private var isFirstStart = true
 
+    private fun createSubtitleStyle(): CaptionStyleCompat {
+        return CaptionStyleCompat(
+            Color.WHITE,
+            Color.TRANSPARENT,
+            Color.TRANSPARENT,
+            CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW,
+            Color.BLACK,
+            Typeface.SERIF
+        )
+    }
+
     init {
         LayoutInflater.from(context).inflate(R.layout.media3_player_view, this)
         if (isInEditMode.not()) {
             bindViews()
             initPlayListener()
+            subtitleView.setUserDefaultStyle()
             subtitleView.setUserDefaultTextSize()
-            subtitleView.setStyle(
-                CaptionStyleCompat(
-                    Color.WHITE,
-                    Color.TRANSPARENT,
-                    Color.TRANSPARENT,
-                    CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW,
-                    Color.BLACK,
-                    Typeface.DEFAULT
-                )
-            )
 
             ratioContentFrame.alpha = 0f //避免首屏闪烁
             ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
@@ -142,12 +158,26 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                 )
             )
 
-            internalPlayer.addAnalyticsListener(EventLogger("ExoPlayer"))
-            internalPlayer.setVideoSurfaceView(surfaceView as SurfaceView)
             internalPlayer.setWakeMode(C.WAKE_MODE_LOCAL)
             internalPlayer.addListener(playerListener)
+            internalPlayer.setVideoSurfaceView(surfaceView as SurfaceView)
+            internalPlayer.addAnalyticsListener(EventLogger("Media3Player"))
+            internalPlayer.trackSelectionParameters =
+                internalPlayer.trackSelectionParameters.buildUpon()
+                    .setPreferredAudioLanguage(Locale.getDefault().language)
+                    .setPreferredTextLanguage(Locale.getDefault().language).build()
+
             controlView.attachPlayerView(this)
             gestureView.attachPlayerView(this)
+            trackView.attachPlayerView(this)
+
+            if (context.getCurrentOrientation() == Configuration.ORIENTATION_LANDSCAPE) {
+                hideBars()
+            }
+            Log.e(
+                "ShowBars",
+                "isLANDSCAPE = ${context.getCurrentOrientation() == Configuration.ORIENTATION_LANDSCAPE}"
+            )
         }
     }
 
@@ -156,6 +186,8 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         subtitleView = findViewById(R.id.media3_subtitles)
         ratioContentFrame = findViewById(R.id.media3_content_frame)
         gestureView = findViewById(R.id.gesture_view)
+        trackView = findViewById(R.id.track_view)
+
         controlView = findViewById(R.id.media3_control_view)
         errorMessage = findViewById(R.id.media3_error_message)
         errorStatusBtn = findViewById(R.id.media3_error_status_btn)
@@ -189,6 +221,11 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     private fun initPlayListener() {
         playerListener = object : Player.Listener {
+            override fun onCues(cueGroup: CueGroup) {
+                super.onCues(cueGroup)
+                subtitleView.setCues(cueGroup.cues)
+            }
+
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 super.onIsPlayingChanged(isPlaying)
                 surfaceView.keepScreenOn = isPlaying
@@ -209,11 +246,6 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                         it.onStateChanged(currentPlayState)
                     }
                 }
-            }
-
-            override fun onCues(cueGroup: CueGroup) {
-                super.onCues(cueGroup)
-                subtitleView.setCues(cueGroup.cues)
             }
 
             override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -242,7 +274,6 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             @SuppressLint("SetTextI18n")
             override fun onPlaybackStateChanged(playbackState: Int) {
                 super.onPlaybackStateChanged(playbackState)
-
                 Log.e("PlayerView", "playbackState = $playbackState")
                 bufferingLayout.isVisible = false
                 completionLayout.isVisible = false
@@ -268,6 +299,7 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                     Player.STATE_ENDED -> {
                         clearPosition()
                         controlView.hide()
+
                         currentPlayState = Media3PlayState.STATE_ENDED
                         completionLayout.isVisible = true
                         completionStatusBtn.setOnClickListener {
@@ -324,14 +356,11 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             FIT -> ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
             FILL -> ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
             ZOOM -> ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+            FIXED_WIDTH -> ratioContentFrame.resizeMode =
+                AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
 
-            FIXED_WIDTH -> {
-                ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
-            }
-
-            FIXED_HEIGHT -> {
-                ratioContentFrame.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
-            }
+            FIXED_HEIGHT -> ratioContentFrame.resizeMode =
+                AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
         }
     }
 
@@ -356,12 +385,12 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     fun start() {
-        internalPlayer.playWhenReady = true
+        internalPlayer.play()
     }
 
     fun pause() {
         savePosition()
-        internalPlayer.playWhenReady = false
+        internalPlayer.pause()
     }
 
     fun stop() {
@@ -371,14 +400,14 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     fun retryPlayback() {
         prepare()
-        internalPlayer.playWhenReady = true
+        start()
     }
 
     fun prepare() {
-        internalPlayer.prepare()
         bufferingMessage.text = context.getString(R.string.media3_on_opening_media)
         bufferingView.isIndeterminate = true
         bufferingLayout.isVisible = true
+        internalPlayer.prepare()
     }
 
     fun reset() {
@@ -389,6 +418,10 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     fun isPlaying(): Boolean {
         return internalPlayer.isPlaying
+    }
+
+    fun isBuffing(): Boolean {
+        return internalPlayer.playbackState == Player.STATE_BUFFERING
     }
 
     fun currentPlayState(): Int {
@@ -476,6 +509,23 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             val position = if (next == null) 0L else getPosition(next)
             seekToItem(prevIndex, position)
         }
+    }
+
+    fun showError(error: CharSequence, retry: (() -> Unit)? = null) {
+        stop()
+        errorLayout.isVisible = true
+        errorMessage.text = error
+
+        errorStatusBtn.isVisible = retry != null
+        errorStatusBtn.setOnClickListener {
+            retry?.invoke()
+        }
+    }
+
+    fun showLoading(message: CharSequence) {
+        bufferingLayout.isVisible = true
+        bufferingMessage.text = message
+        bufferingView.isIndeterminate = true
     }
 
     fun addOnStateChangeListener(listener: OnStateChangeListener) {
@@ -641,24 +691,23 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     }
 
     /**********************ControlView*********************************/
-
-    fun onControlViewVisibleListener(listener: OnControlViewVisibleListener) {
-        this.onControlViewVisibleListener = listener
+    fun setShowTitleBarInPortrait(show: Boolean) {
+        controlView.setShowTitleBarInPortrait(show)
     }
 
-    fun showControlView() {
-        if (isInFullscreen.not()) {
-            showBars()
+    fun showControlView(block: (() -> Unit)? = null) {
+        showBars()
+        controlView.show {
+            startHideControlViewJob()
+            block?.invoke()
         }
-        controlView.show()
-        onControlViewVisibleListener?.onVisibleChanged(true, isInFullscreen)
-        startHideControlViewJob()
     }
 
-    fun hideControlView() {
+    fun hideControlView(block: (() -> Unit)? = null) {
         hideBars()
-        controlView.hide()
-        onControlViewVisibleListener?.onVisibleChanged(false, isInFullscreen)
+        controlView.hide {
+            block?.invoke()
+        }
     }
 
     fun isControlViewVisible(): Boolean {
@@ -729,10 +778,6 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
                     if (internalPlayer.isPlaying) {
                         hideBars()
                         controlView.hide()
-                        onControlViewVisibleListener?.onVisibleChanged(
-                            false,
-                            isInFullscreen
-                        )
                         break
                     }
                 }
@@ -740,14 +785,22 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            hideBars()
+        }
+    }
+
     fun startFullScreen() {
         hideBars()
         PlayerUtils.scanForActivity(context)?.let { activity ->
-            onRequestScreenOrientationListener?.invoke(true)
-            rootView.removeView(rootContainer)
+            val parent = rootContainer.parent as ViewGroup
+            parent.removeView(rootContainer)
+
             val decorView = activity.window.decorView as ViewGroup
             decorView.addView(rootContainer)
-            isInFullscreen = true
+            onRequestScreenOrientationListener?.invoke(true)
         }
     }
 
@@ -756,13 +809,11 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
         if (controlView.isVisible) {
             showBars()
         }
-        PlayerUtils.scanForActivity(context)?.let { activity ->
-            onRequestScreenOrientationListener?.invoke(false)
-            val decorView = activity.window.decorView as ViewGroup
-            decorView.removeView(rootContainer)
-            rootView.addView(rootContainer)
-            isInFullscreen = false
-        }
+        val parent = rootContainer.parent as ViewGroup
+        parent.removeView(rootContainer)
+
+        rootView.addView(rootContainer)
+        onRequestScreenOrientationListener?.invoke(false)
     }
 
     private fun hideBars() {
@@ -777,6 +828,9 @@ class Media3PlayerView(context: Context, attrs: AttributeSet?) : FrameLayout(con
 
     @SuppressLint("SourceLockedOrientationActivity")
     private fun showBars() {
+        if (context.getCurrentOrientation() != Configuration.ORIENTATION_PORTRAIT) {
+            return
+        }
         PlayerUtils.scanForActivity(context)?.let { activity ->
             WindowInsetsControllerCompat(activity.window, activity.window.decorView).also {
                 it.systemBarsBehavior =

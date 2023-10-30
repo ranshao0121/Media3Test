@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
-
     <!-- Disabled -->
-    <item android:alpha="0.38"
-        android:color="@color/colorOnSurfaceMedium"
-        android:state_enabled="false"/>
+    <item android:alpha="0.38" android:color="?attr/colorOnSurfaceVariant" android:state_enabled="false"/>
 
     <!-- Error -->
-    <item android:color="@color/colorOnSurfaceMedium" app:state_error="true" />
+    <item android:color="?attr/colorOnSurfaceVariant" app:state_error="true" />
 
     <!-- Indeterminate -->
-    <item android:color="@color/colorOnSurfaceMedium" app:state_indeterminate="true" />
+    <item android:color="?attr/colorOnSurfaceVariant" app:state_indeterminate="true" />
 
     <!-- Checked -->
-    <item android:color="@color/colorSecondary" android:state_checked="true" />
+    <item android:color="?attr/colorPrimaryInverse" android:state_checked="true" />
 
     <!-- Unchecked -->
-    <item android:color="@color/colorOnSurfaceMedium" android:state_checked="false" />
+    <item android:color="?attr/colorOnSurfaceVariant" android:state_checked="false" />
 </selector>

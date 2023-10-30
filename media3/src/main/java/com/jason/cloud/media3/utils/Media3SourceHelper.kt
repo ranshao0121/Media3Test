@@ -8,7 +8,6 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
-import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
@@ -20,6 +19,7 @@ import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.media3.exoplayer.source.ConcatenatingMediaSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.jason.cloud.media3.model.Media3Item
@@ -29,6 +29,7 @@ import okhttp3.OkHttpClient
 import java.io.File
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
@@ -50,7 +51,7 @@ class Media3SourceHelper private constructor(private val applicationContext: Con
         newCache()
     }
 
-    private val dataSourceFactory: DataSource.Factory by lazy {
+    private val dataSourceFactory: DefaultDataSource.Factory by lazy {
         DefaultDataSource.Factory(applicationContext, httpDataSourceFactory)
     }
 
@@ -60,6 +61,11 @@ class Media3SourceHelper private constructor(private val applicationContext: Con
         builder.followSslRedirects(true)
         builder.hostnameVerifier { _, _ -> true }
         builder.trustSSLCertificate()
+        builder.callTimeout(3, TimeUnit.MINUTES)
+        builder.readTimeout(3, TimeUnit.MINUTES)
+        builder.writeTimeout(3, TimeUnit.MINUTES)
+        builder.connectTimeout(3, TimeUnit.MINUTES)
+
         val client: OkHttpClient = builder.build()
         OkHttpDataSource.Factory { request ->
             Log.i("DataSourceFactory", "newCall: $request")
@@ -189,7 +195,7 @@ class Media3SourceHelper private constructor(private val applicationContext: Con
         return source
     }
 
-    fun getMediaSource(
+    private fun getMediaSource(
         item: Media3Item,
         headers: Map<String, String>? = null,
         isCache: Boolean
@@ -219,7 +225,6 @@ class Media3SourceHelper private constructor(private val applicationContext: Con
         }
 
         setHeaders(headers)
-
         return when (inferContentType(item.url)) {
             C.CONTENT_TYPE_DASH -> DashMediaSource.Factory(factory)
                 .createMediaSource(createMediaItem(item))
@@ -227,15 +232,31 @@ class Media3SourceHelper private constructor(private val applicationContext: Con
             C.CONTENT_TYPE_HLS -> HlsMediaSource.Factory(factory)
                 .createMediaSource(createMediaItem(item))
 
-            C.CONTENT_TYPE_OTHER -> ProgressiveMediaSource.Factory(factory)
+            C.CONTENT_TYPE_OTHER -> DefaultMediaSourceFactory(dataSourceFactory)
                 .createMediaSource(createMediaItem(item))
-
-            else -> ProgressiveMediaSource.Factory(factory).createMediaSource(createMediaItem(item))
+            //ProgressiveMediaSource
+            else -> DefaultMediaSourceFactory(dataSourceFactory).createMediaSource(
+                createMediaItem(
+                    item
+                )
+            )
         }
     }
 
     private fun createMediaItem(item: Media3Item): MediaItem {
-        return MediaItem.Builder().setTag(item).setUri(item.url).build()
+        val mediaSubtitles = item.externalSubtitles.map { externalSubtitle ->
+            Log.e("Media3SourceHelper", "createSubtitle: ${externalSubtitle.uri}")
+            MediaItem.SubtitleConfiguration.Builder(Uri.parse(externalSubtitle.uri))
+                .setId(externalSubtitle.uri.hashCode().toString())
+                .setLabel(externalSubtitle.title.ifBlank { "外部字幕" })
+                .setMimeType(externalSubtitle.mimeType)
+                .setLanguage(externalSubtitle.language)
+                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                .build()
+        }
+
+        return MediaItem.Builder().setTag(item).setUri(item.url)
+            .setSubtitleConfigurations(mediaSubtitles).build()
     }
 
     private fun inferContentType(fileName: String): Int {

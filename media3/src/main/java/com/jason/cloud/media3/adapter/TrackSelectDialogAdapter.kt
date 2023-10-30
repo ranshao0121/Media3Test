@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.jason.cloud.media3.R
 import com.jason.cloud.media3.model.TrackSelectEntity
 
-class TrackSelectAdapter : RecyclerView.Adapter<TrackSelectAdapter.ViewHolder>() {
+class TrackSelectDialogAdapter : RecyclerView.Adapter<TrackSelectDialogAdapter.ViewHolder>() {
     private val items = ArrayList<TrackSelectEntity>()
     private var selectedPosition = 0
     private var onSelectionChangedListener: ((Int, TrackSelectEntity) -> Unit)? = null
@@ -22,7 +22,7 @@ class TrackSelectAdapter : RecyclerView.Adapter<TrackSelectAdapter.ViewHolder>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(parent.context).inflate(
-                R.layout.item_media3_track_select, parent, false
+                R.layout.item_media3_track_select_dialog, parent, false
             )
         )
     }

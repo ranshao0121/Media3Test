@@ -1,14 +1,14 @@
 package com.jason.cloud.buildsrc
 
 object Dependencies {
-    const val androidx_core_ktx = "1.10.1"
+    const val androidx_core_ktx = "1.12.0"
     const val androidx_appcompat = "1.6.1"
     const val androidx_room = "2.5.2"
     const val androidx_lifecycle = "2.6.1"
     const val androidx_legacy_support_v4 = "1.0.0"
     const val androidx_constraintlayout = "2.1.4"
 
-    const val google_material = "1.9.0"
+    const val google_material = "1.10.0"
 
     const val okhttp3 = "4.11.0"
     const val qiniu_dns = "2.0.1"
@@ -29,5 +29,5 @@ object Dependencies {
     const val androidx_test_junit = "1.1.5"
     const val androidx_espresso_core = "3.5.1"
     const val exo = "2.19.0"
-    const val media3 = "1.1.0"
+    const val media3 = "1.1.1"
 }

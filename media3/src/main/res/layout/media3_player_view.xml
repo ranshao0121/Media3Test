@@ -40,10 +40,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <com.jason.cloud.media3.widget.Media3TrackView
+            android:id="@+id/track_view"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
         <com.jason.cloud.media3.widget.Media3PlayerControlView
             android:id="@+id/media3_control_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            tools:visibility="visible" />
 
         <LinearLayout
             android:id="@+id/media3_error_layout"
@@ -131,7 +138,7 @@
                 android:layout_gravity="center"
                 android:indeterminate="false"
                 android:progress="20"
-                app:indicatorColor="@color/colorSecondary"
+                app:indicatorColor="?attr/colorPrimaryInverse"
                 app:indicatorSize="30dp"
                 app:trackColor="#36FFFFFF"
                 app:trackCornerRadius="50dp"
@@ -171,7 +178,7 @@
                 android:layout_height="wrap_content"
                 android:max="100"
                 android:progress="50"
-                app:indicatorColor="@color/colorSecondary"
+                app:indicatorColor="?attr/colorPrimaryInverse"
                 app:indicatorSize="30dp"
                 app:trackColor="#36FFFFFF"
                 app:trackCornerRadius="50dp"
@@ -277,7 +284,7 @@
                 android:layout_height="wrap_content"
                 android:max="100"
                 android:progress="50"
-                app:indicatorColor="@color/colorSecondary"
+                app:indicatorColor="?attr/colorPrimaryInverse"
                 app:indicatorSize="30dp"
                 app:trackColor="#36FFFFFF"
                 app:trackCornerRadius="50dp"
@@ -318,7 +325,7 @@
                 android:layout_height="wrap_content"
                 android:max="100"
                 android:progress="50"
-                app:indicatorColor="@color/colorSecondary"
+                app:indicatorColor="?attr/colorPrimaryInverse"
                 app:indicatorSize="30dp"
                 app:trackColor="#36FFFFFF"
                 app:trackCornerRadius="50dp"
@@ -359,7 +366,8 @@
             android:textSize="14sp"
             android:visibility="gone"
             app:drawableLeftCompat="@drawable/ic_media3_round_electric_bolt_14"
-            app:drawableTint="@color/colorSecondary"
+            app:drawableTint="?attr/colorPrimaryInverse"
             tools:visibility="gone" />
     </FrameLayout>
+
 </FrameLayout>

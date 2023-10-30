@@ -2,33 +2,23 @@
     "list": [
         {
             "name": "六小鱼\uD83D\uDC1F.mp4",
-            "uri": "http://192.168.0.5:8820/file?hash=6c6b49691584e1729fe27141d742914a",
+            "uri": "http://192.168.0.5:2333/%E7%9B%B4%E6%92%AD/%E5%85%AD%E5%B0%8F%E9%B1%BC%F0%9F%90%9F.mp4",
             "useCache": true
         },
         {
-            "name": "A.Thursday.2022.2160p.HS.WEB-DL.DDP.5.1.Atmos.HDR.H.265-DreamHD.mkv",
-            "uri": "http://192.168.0.5:8820/file?hash=be8ce2429cd47c51e0a44fe5ff581d3d",
-            "useCache": false
-        },
-        {
-            "name": "The.Flash.2023.2160p.WEB-DL.DDP5.1.Atmos.H.265-Archie.mkv",
-            "uri": "http://192.168.0.5:8820/file?hash=72b0f32bef4b10c4f35e29725d5bbfbc",
+            "name": "六小鱼-20230810.mp4",
+            "uri": "http://192.168.0.5:2333/%E7%9B%B4%E6%92%AD/%E5%85%AD%E5%B0%8F%E9%B1%BC%F0%9F%90%9F-20230810.mp4",
             "useCache": true
         },
         {
-            "name": "Your.Name.2016.JPN.UHD.BluRay.2160p.10bit.HDR.4Audio.DTS-HD.MA.5.1.x265-beAst.mkv",
-            "uri": "http://192.168.0.5:8820/file?hash=db71c2c083d498a9191027149a223415",
-            "useCache": false
+            "name": "六小鱼-20230811.mp4",
+            "uri": "http://192.168.0.5:2333/%E7%9B%B4%E6%92%AD/%E5%85%AD%E5%B0%8F%E9%B1%BC%F0%9F%90%9F-20230811.mp4",
+            "useCache": true
         },
         {
-            "name": "[僵尸叔叔].Mr.Vampire.IV.1988.GBR.BluRay.720p.x264.AC3.2Audios-CMCT.mkv",
-            "uri": "http://192.168.0.5:8820/file?hash=024abbef0088082207d0ab7aeb20e50c",
-            "useCache": false
-        },
-        {
-            "name": "Mechanic.Resurrection.2016.BluRay.1080p.TrueHD.Atmos.7.1.x265.10bit-ALT.mkv",
-            "uri": "http://192.168.0.5:8820/file?hash=a704196a82106773f769c40e8a5dd783",
-            "useCache": false
+            "name": "猫几o.0.mp4",
+            "uri": "http://192.168.0.5:2333/%E7%9B%B4%E6%92%AD/%E7%8C%AB%E5%87%A0o.0.mp4",
+            "useCache": true
         }
     ]
 }

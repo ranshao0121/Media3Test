@@ -1,28 +1,24 @@
 package com.jason.cloud.media3.dialog
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Context
 import android.util.Log
-import android.widget.TextView
-import androidx.core.view.isVisible
+import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jason.cloud.media3.R
-import com.jason.cloud.media3.adapter.TrackSelectAdapter
+import com.jason.cloud.media3.adapter.TrackSelectDialogAdapter
 import com.jason.cloud.media3.model.TrackSelectEntity
 
-class TrackSelectDialog(context: Context) : Dialog(context, R.style.Media3DialogStyle) {
-    private val adapter = TrackSelectAdapter()
-    private val tvTitle by lazy { findViewById<TextView>(R.id.tv_title) }
-    private val rvSelection by lazy { findViewById<RecyclerView>(R.id.rv_selection) }
-    private val btnNeutral by lazy { findViewById<MaterialButton>(R.id.btn_neutral) }
-    private val btnNegative by lazy { findViewById<MaterialButton>(R.id.btn_negative) }
-    private val btnPositive by lazy { findViewById<MaterialButton>(R.id.btn_positive) }
+class TrackSelectDialog(context: Context) {
+    private val view = View.inflate(context, R.layout.media3_view_track_select_dialog, null)
+
     private var lastSelection = 0
+    private val adapter = TrackSelectDialogAdapter()
+    private val builder = MaterialAlertDialogBuilder(context).setView(view)
+    private val rvSelection by lazy { view.findViewById<RecyclerView>(R.id.rv_selection) }
 
     init {
-        setContentView(R.layout.layout_track_select_dialog)
         rvSelection.adapter = adapter
         adapter.setOnSelectionChangedListener { i, _ ->
             doSelection(i)
@@ -32,39 +28,33 @@ class TrackSelectDialog(context: Context) : Dialog(context, R.style.Media3Dialog
     private fun doSelection(position: Int) {
         Log.e("TrackSelectDialog", "doSelection: $position")
         for (i in 0 until adapter.itemCount) {
-            val holder = rvSelection.findViewHolderForAdapterPosition(i)
-            if (holder is TrackSelectAdapter.ViewHolder) {
+            val holder = rvSelection?.findViewHolderForAdapterPosition(i)
+            if (holder is TrackSelectDialogAdapter.ViewHolder) {
                 holder.checkbox.isChecked = i == position
             }
         }
     }
 
-    override fun setTitle(title: CharSequence?) {
-        super.setTitle(title)
-        tvTitle.text = title
+    fun setTitle(title: CharSequence?) {
+        builder.setTitle(title)
     }
 
-    override fun setTitle(titleId: Int) {
-        super.setTitle(titleId)
-        tvTitle.setText(titleId)
+    fun setTitle(titleId: Int) {
+        builder.setTitle(titleId)
     }
 
     fun setTitle(title: CharSequence): TrackSelectDialog {
-        tvTitle.text = title
+        builder.setTitle(title)
         return this
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setSelectionData(list: List<TrackSelectEntity>): TrackSelectDialog {
+    fun setSelectionData(list: List<TrackSelectEntity>, selected: Int): TrackSelectDialog {
+        lastSelection = selected
+        adapter.setSelectedPosition(selected)
         adapter.setData(list)
         adapter.notifyDataSetChanged()
-        return this
-    }
-
-    fun setSelectedPosition(position: Int): TrackSelectDialog {
-        lastSelection = position
-        adapter.setSelectedPosition(position)
-        rvSelection.scrollToPosition(position)
+        rvSelection?.scrollToPosition(selected)
         return this
     }
 
@@ -72,39 +62,42 @@ class TrackSelectDialog(context: Context) : Dialog(context, R.style.Media3Dialog
         text: CharSequence? = null,
         block: ((selection: TrackSelectEntity) -> Unit)? = null
     ): TrackSelectDialog {
-        if (text != null) {
-            btnPositive.text = text
-        }
-        btnPositive.setOnClickListener {
+        builder.setPositiveButton(text) { _, _ ->
             if (lastSelection != adapter.getSelectionPosition()) {
                 block?.invoke(adapter.getSelectedItem())
             }
-            dismiss()
         }
         return this
     }
 
     fun onNegative(text: CharSequence? = null, block: (() -> Unit)? = null): TrackSelectDialog {
-        if (text != null) {
-            btnNegative.text = text
-        }
-        btnNegative.isVisible = true
-        btnNegative.setOnClickListener {
+        builder.setNegativeButton(text) { _, _ ->
             block?.invoke()
-            dismiss()
         }
         return this
     }
 
     fun onNeutral(text: CharSequence? = null, block: (() -> Unit)? = null): TrackSelectDialog {
-        if (text != null) {
-            btnNeutral.text = text
-        }
-        btnNeutral.isVisible = true
-        btnNeutral.setOnClickListener {
+        builder.setNeutralButton(text) { _, _ ->
             block?.invoke()
-            dismiss()
         }
         return this
+    }
+
+    fun show() {
+        val dialog = builder.create()
+        dialog.setOnShowListener { onShowListener?.invoke() }
+        dialog.show()
+    }
+
+    private var onShowListener: (() -> Unit?)? = null
+    fun setOnShowListener(onShowListener: () -> Unit?) {
+        this.onShowListener = onShowListener
+    }
+
+    fun setOnDismissListener(function: () -> Unit?) {
+        builder.setOnDismissListener {
+            function.invoke()
+        }
     }
 }

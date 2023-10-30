@@ -1,35 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
-    android:minHeight="56dp"
     android:orientation="horizontal"
-    android:paddingStart="24dp"
+    android:paddingStart="?attr/dialogPreferredPadding"
     android:paddingTop="8dp"
-    android:paddingEnd="24dp"
+    android:minHeight="56dp"
+    android:paddingEnd="?attr/dialogPreferredPadding"
     android:paddingBottom="8dp">
 
     <TextView
-        android:id="@+id/tv_name"
+        android:id="@+id/tv_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="日语(Japanese DTS-HD Master Audio 5.1 @xxxxxxxx 3595/1509 kbps)"
-        android:textColor="@color/color_media3_track_text"
-        android:textSize="14sp" />
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="14sp"
+        tools:text="日语(Japanese DTS-HD Master Audio 5.1 @xxxxxxxx 3595/1509 kbps)" />
 
     <Space
-        android:layout_width="4dp"
-        android:layout_height="0dp" />
+        android:layout_width="8dp"
+        android:layout_height="4dp" />
 
     <CheckBox
         android:id="@+id/checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:buttonTint="@color/color_media3_track_text"
-        android:checked="false"
         android:minWidth="0dp"
-        android:minHeight="0dp" />
+        android:minHeight="0dp"
+        android:checked="false" />
+
 </LinearLayout>

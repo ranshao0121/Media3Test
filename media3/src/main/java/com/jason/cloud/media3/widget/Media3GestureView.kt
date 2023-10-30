@@ -70,10 +70,14 @@ class Media3GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(co
         return false
     }
 
-    override fun onScroll(e1: MotionEvent, e2: MotionEvent, dx: Float, dy: Float): Boolean {
-        if (playerView.isPlaying().not()) return true
-        if (PlayerUtils.isEdge(context, e1)) return true
-        if (playerView.isLocked) return true
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent, dx: Float, dy: Float): Boolean {
+        e1 ?: return true
+        if (PlayerUtils.isEdge(context, e1)) {
+            return true
+        }
+        if (playerView.isLocked) {
+            return true
+        }
 
         if (isFirstTouch) {
             isChangePosition = abs(dx) >= abs(dy)
@@ -86,10 +90,6 @@ class Media3GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(co
                     isChangeBrightness = true
                 }
             }
-            if (isChangePosition) {
-                //根据用户设置是否可以滑动调节进度来决定最终是否可以滑动调节进度
-                isChangePosition = true
-            }
             playerView.onStartSlide()
             isFirstTouch = false
         }
@@ -97,10 +97,14 @@ class Media3GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(co
         val deltaX = e1.x - e2.x
         val deltaY = e1.y - e2.y
         if (isChangePosition) {
+            if (playerView.isBuffing()) return true
+            if (playerView.isPlaying().not()) return true
             slideToChangePosition(deltaX)
         } else if (isChangeBrightness) {
+            if (playerView.isBuffing()) return true
             slideToChangeBrightness(deltaY)
         } else if (isChangeVolume) {
+            if (playerView.isBuffing()) return true
             slideToChangeVolume(deltaY)
         }
         return true
@@ -200,7 +204,7 @@ class Media3GestureView(context: Context, attrs: AttributeSet?) : FrameLayout(co
         }
     }
 
-    override fun onFling(e1: MotionEvent, e2: MotionEvent, vX: Float, vY: Float): Boolean {
+    override fun onFling(e1: MotionEvent?, e2: MotionEvent, vX: Float, vY: Float): Boolean {
         return false
     }
 
